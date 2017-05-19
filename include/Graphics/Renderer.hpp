@@ -2,6 +2,8 @@
 
 #include <memory> // std::unique_ptr
 
+#include <Graphics/API/ShaderProgram.hpp>
+
 namespace Graphics {
 
 class Renderer {
@@ -12,7 +14,7 @@ public:
     Renderer(Renderer&& renderer) = delete;
 
     Renderer& operator=(const Renderer& renderer) = delete;
-    Renderer&& operator=(Renderer&& renderer) = delete;
+    Renderer& operator=(Renderer&& renderer) = delete;
 
     static std::unique_ptr<Renderer> create();
 
@@ -21,6 +23,9 @@ private:
     Renderer() = default;
 
     bool init();
+
+private:
+    API::ShaderProgram _shaderProgram;
 };
 
 } // Graphics
