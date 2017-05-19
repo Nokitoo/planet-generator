@@ -31,6 +31,10 @@ bool Application::run() {
                 return true;
             }
         }
+
+        _window->beginFrame();
+        // TODO: draw something
+        _window->endFrame();
     }
 
     return false;
