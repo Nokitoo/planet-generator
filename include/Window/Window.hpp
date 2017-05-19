@@ -17,6 +17,12 @@ class Window {
 public:
     ~Window();
 
+    Window(const Window& window) = delete;
+    Window(Window&& window) = delete;
+
+    Window& operator=(const Window& window) = delete;
+    Window&& operator=(Window&& window) = delete;
+
     static std::unique_ptr<Window> create(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size);
 
     bool pollEvent(Event& event);

@@ -9,6 +9,13 @@ public:
     Application() = default;
     ~Application() = default;
 
+    Application(const Application& app) = delete;
+    Application(Application&& app) = delete;
+
+    Application& operator=(const Application& app) = delete;
+    Application&& operator=(Application&& app) = delete;
+
+
     bool init();
     bool run();
 
