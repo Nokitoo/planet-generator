@@ -28,6 +28,7 @@ public:
     bool pollEvent(Event& event);
 
 private:
+    // Only the Window::create can create the window
     Window() = default;
 
     bool init(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size);

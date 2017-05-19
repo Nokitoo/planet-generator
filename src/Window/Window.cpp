@@ -39,7 +39,8 @@ bool Window::pollEvent(Event& event) {
 
 bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0){
-        std::cout << "Window::init: Error: " << SDL_GetError() << std::endl;
+        // TODO: replace this with logger
+        std::cerr << "Window::init: Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
@@ -47,7 +48,7 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
 
     if (_window == nullptr){
         // TODO: replace this with logger
-        std::cout << "Window::init: Error: " << SDL_GetError() << std::endl;
+        std::cerr << "Window::init: Error: " << SDL_GetError() << std::endl;
         destroy();
         return false;
     }
@@ -59,7 +60,8 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
         );
 
     if (_renderer == nullptr){
-        std::cout << "Window::init: Error: " << SDL_GetError() << std::endl;
+        // TODO: replace this with logger
+        std::cerr << "Window::init: Error: " << SDL_GetError() << std::endl;
         destroy();
         return 1;
     }
