@@ -1,7 +1,10 @@
 #pragma once
 
-#include <Window/Window.hpp>
+#include <cstdint> // uint32_t
+
+#include <Graphics/API/Buffer.hpp>
 #include <Graphics/Renderer.hpp>
+#include <Window/Window.hpp>
 
 namespace Core {
 
@@ -20,8 +23,14 @@ public:
     bool run();
 
 private:
+    bool initCube();
+
+private:
     std::unique_ptr<Window::Window> _window = nullptr;
     std::unique_ptr<Graphics::Renderer> _renderer = nullptr;
+
+    Graphics::API::Buffer _cubeBuffer;
+    uint32_t _cubeIndicesNb = 0;
 };
 
 } // Core

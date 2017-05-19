@@ -23,9 +23,9 @@ public:
     ShaderProgram& operator=(const ShaderProgram& shaderProgram) = delete;
     ShaderProgram& operator=(ShaderProgram&& shaderProgram);
 
-    void use();
+    void use() const;
 
-    GLuint getUniformLocation(const char* location);
+    GLuint getUniformLocation(const char* location) const;
 
 private:
     GLuint _shaderProgram = 0;

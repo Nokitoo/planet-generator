@@ -31,7 +31,7 @@ bool Window::pollEvent(Event& event) {
                 return true;
             default:
                 // Event not handled
-                return false;
+                return true;
         }
     }
 
@@ -40,6 +40,7 @@ bool Window::pollEvent(Event& event) {
 
 void Window::beginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, _size.x, _size.y);
 }
 
 void Window::endFrame() {
@@ -47,9 +48,7 @@ void Window::endFrame() {
 }
 
 bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size) {
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    _size = size;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         // TODO: replace this with logger
@@ -57,13 +56,21 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
         return false;
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    // Enable double buffering
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    // Use a depth buffer of 24 bits
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
     // Create window
     _window = SDL_CreateWindow(title.c_str(), pos.x, pos.y, size.x, size.y, SDL_WINDOW_OPENGL);
 
     if (_window == nullptr) {
         // TODO: replace this with logger
         std::cerr << "Window::init: Can't create window: " << SDL_GetError() << std::endl;
-        destroy();
         return false;
     }
 
@@ -79,18 +86,20 @@ bool Window::initOpenGL() {
         return false;
     }
 
-    // Init glew
-    GLenum glewError = glewInit();
-    if (glewError != GLEW_OK) {
-        // TODO: replace this with logger
-        std::cerr << "Window::init: Can't init glew: " <<  glewGetErrorString(glewError) << std::endl;
-        return false;
-    }
+    SDL_GL_MakeCurrent(_window, _glContext);
 
     //Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {
         // TODO: replace this with logger
         std::cerr << "Window::init: Can't init vsync: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    // Init glew
+    GLenum glewError = glewInit();
+    if (glewError != GLEW_OK) {
+        // TODO: replace this with logger
+        std::cerr << "Window::init: Can't init glew: " <<  glewGetErrorString(glewError) << std::endl;
         return false;
     }
 

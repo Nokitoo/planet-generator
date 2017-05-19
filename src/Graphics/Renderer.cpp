@@ -33,6 +33,8 @@ bool Renderer::init() {
         return false;
     }
 
+    _shaderProgram.use();
+
     return true;
 }
 

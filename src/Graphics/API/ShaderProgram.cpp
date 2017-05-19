@@ -35,12 +35,12 @@ ShaderProgram::~ShaderProgram() {
     }
 }
 
-void ShaderProgram::use() {
+void ShaderProgram::use() const {
     glUseProgram(_shaderProgram);
 }
 
 // /!\ Don't call each frame, it's very expensive
-GLuint ShaderProgram::getUniformLocation(const char* location) {
+GLuint ShaderProgram::getUniformLocation(const char* location) const {
     return glGetUniformLocation(_shaderProgram, location);
 }
 
