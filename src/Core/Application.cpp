@@ -37,13 +37,7 @@ bool Application::run() {
         }
 
         _window->beginFrame();
-        _cubeBuffer.bind();
-        glDrawElements(
-            GL_TRIANGLES,
-            (GLuint)_cubeIndicesNb,
-            GL_UNSIGNED_INT,
-            0
-            );
+        _renderer->render(_cubeBuffer, _cubeIndicesNb);
         _window->endFrame();
     }
 

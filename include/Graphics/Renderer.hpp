@@ -2,7 +2,11 @@
 
 #include <memory> // std::unique_ptr
 
+#include <GL/glew.h> // GLuint
+
+#include <Graphics/API/Buffer.hpp>
 #include <Graphics/API/ShaderProgram.hpp>
+#include <Graphics/Camera.hpp>
 
 namespace Graphics {
 
@@ -18,14 +22,24 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
+    void render(const API::Buffer& buffer, uint32_t indicesNb);
+
 private:
     // Only the Renderer::create can create the renderer
     Renderer() = default;
-
     bool init();
 
 private:
+    bool initShaderProgram();
+    bool initCamera();
+
+private:
     API::ShaderProgram _shaderProgram;
+
+    Camera _camera;
+
+    GLuint _viewUniformLocation;
+    GLuint _projUniformLocation;
 };
 
 } // Graphics
