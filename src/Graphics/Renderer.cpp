@@ -39,6 +39,14 @@ void Renderer::render(Camera& camera, const API::Buffer& buffer, uint32_t indice
 }
 
 bool Renderer::init() {
+    // Enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
+    // Activate back culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     return initShaderProgram();
 }
 

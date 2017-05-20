@@ -39,7 +39,7 @@ bool Buffer::build(API::Buffer& buffer) {
             attribute.componentType,
             attribute.normalized,
             attribute.stride,
-            (GLvoid*)0);
+            (GLvoid*)attribute.offset);
 
         glEnableVertexAttribArray(attribute.location);
     }

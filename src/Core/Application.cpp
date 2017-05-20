@@ -50,6 +50,8 @@ bool Application::run() {
 bool Application::initCube() {
     struct Vertex {
         glm::vec3 pos;
+        glm::vec3 color;
+        glm::vec3 normal;
     };
 
     float width = 10.0f;
@@ -58,40 +60,40 @@ bool Application::initCube() {
 
     Vertex vertices[] = {
         // Front
-        {glm::vec3(-width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(-width / 2.0f, -height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, -length / 2.0f)},
+        { {-width / 2.0f, height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} },
+        { {width / 2.0f, height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} },
+        { {-width / 2.0f, -height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} },
+        { {width / 2.0f, -height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f} },
 
         // Back
-        {glm::vec3(-width / 2.0f, height / 2.0f, length / 2.0f)},
-        {glm::vec3(width / 2.0f, height / 2.0f, length / 2.0f)},
-        {glm::vec3(-width / 2.0f, -height / 2.0f, length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, length / 2.0f)},
+        { {-width / 2.0f, height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} },
+        { {width / 2.0f, height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} },
+        { {-width / 2.0f, -height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} },
+        { {width / 2.0f, -height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} },
 
         // Left
-        {glm::vec3(-width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(-width / 2.0f, height / 2.0f, length / 2.0f)},
-        {glm::vec3(-width / 2.0f, -height / 2.0f, -length / 2.0f)},
-        {glm::vec3(-width / 2.0f, -height / 2.0f, length / 2.0f)},
+        { {-width / 2.0f, height / 2.0f, -length / 2.0f}, {0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+        { {-width / 2.0f, height / 2.0f, length / 2.0f}, {0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+        { {-width / 2.0f, -height / 2.0f, -length / 2.0f}, {0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+        { {-width / 2.0f, -height / 2.0f, length / 2.0f}, {0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
 
         // Right
-        {glm::vec3(width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, height / 2.0f, length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, length / 2.0f)},
+        { {width / 2.0f, height / 2.0f, -length / 2.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f} },
+        { {width / 2.0f, height / 2.0f, length / 2.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f} },
+        { {width / 2.0f, -height / 2.0f, -length / 2.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f} },
+        { {width / 2.0f, -height / 2.0f, length / 2.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f} },
 
         // Top
-        {glm::vec3(-width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(-width / 2.0f, height / 2.0f, length / 2.0f)},
-        {glm::vec3(width / 2.0f, height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, height / 2.0f, length / 2.0f)},
+        { {-width / 2.0f, height / 2.0f, -length / 2.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+        { {-width / 2.0f, height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+        { {width / 2.0f, height / 2.0f, -length / 2.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+        { {width / 2.0f, height / 2.0f, length / 2.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
 
         // Bottom
-        {glm::vec3(-width / 2.0f, -height / 2.0f, -length / 2.0f)},
-        {glm::vec3(-width / 2.0f, -height / 2.0f, length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, -length / 2.0f)},
-        {glm::vec3(width / 2.0f, -height / 2.0f, length / 2.0f)}
+        { {-width / 2.0f, -height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+        { {-width / 2.0f, -height / 2.0f, length / 2.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+        { {width / 2.0f, -height / 2.0f, -length / 2.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+        { {width / 2.0f, -height / 2.0f, length / 2.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}}
     };
 
     uint32_t indices[] = {
@@ -123,13 +125,32 @@ bool Application::initCube() {
     _cubeIndicesNb = sizeof(indices) / sizeof(indices[0]);
 
     Graphics::API::Builder::Buffer bufferBuilder;
+    // Position attribute
     bufferBuilder.addAttribute({
         0,
         3,
         GL_FLOAT,
         GL_FALSE,
         sizeof(Vertex),
-        0
+        offsetof(Vertex, pos)
+    });
+    // Color attribute
+    bufferBuilder.addAttribute({
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        offsetof(Vertex, color)
+    });
+    // Normal attribute
+    bufferBuilder.addAttribute({
+        2,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        offsetof(Vertex, normal)
     });
     bufferBuilder.setVertices((char*)vertices, sizeof(vertices));
     bufferBuilder.setIndices((char*)indices, sizeof(indices));
