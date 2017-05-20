@@ -114,6 +114,15 @@ void Camera::setPos(const glm::vec3& pos) {
     _needUpdateView = true;
 }
 
+void Camera::lookAt(const glm::vec3& pos) {
+    glm::vec3 direction = pos - _pos;
+    float cos_theta = glm::dot(glm::normalize(direction), glm::normalize(_forward));
+    float angle = acos(cos_theta);
+    glm::vec3 w = glm::normalize(glm::cross(direction, _forward));
+
+    _orientation = glm::angleAxis(angle, w);
+}
+
 void Camera::updateProj() {
     _proj = glm::perspective(glm::radians(_fov), _aspect, _near, _far);
 
@@ -122,7 +131,8 @@ void Camera::updateProj() {
 
 void Camera::updateView() {
     glm::mat4 translate = glm::translate(glm::mat4(1.0), -_pos);
-    _view = translate;
+    glm::mat4 rotate = glm::mat4_cast(_orientation);
+    _view = rotate * translate;
 
     _needUpdateView = false;
 }

@@ -23,7 +23,8 @@ bool Application::init() {
         return false;
     }
 
-    _camera.setPos({0.0f, 0.0f, 10.0f});
+    _camera.setPos({15.0f, 15.0f, 15.0f});
+    _camera.lookAt({0.0f, 0.0f, 0.0f});
 
     return initCube();
 }
@@ -51,9 +52,9 @@ bool Application::initCube() {
         glm::vec3 pos;
     };
 
-    float width = 0.5f;
-    float height = 0.5f;
-    float length = 0.5f;
+    float width = 10.0f;
+    float height = 10.0f;
+    float length = 10.0f;
 
     Vertex vertices[] = {
         // Front
