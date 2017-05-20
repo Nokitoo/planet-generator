@@ -56,6 +56,10 @@ void Buffer::addAttribute(const Attribute& attribute) {
 }
 
 void Buffer::setVertices(const char* data, uint32_t size) {
+    if (_verticesData) {
+        delete[] _verticesData;
+    }
+
     _verticesSize = size;
     _verticesData = new char[_verticesSize];
 
@@ -63,6 +67,10 @@ void Buffer::setVertices(const char* data, uint32_t size) {
 }
 
 void Buffer::setIndices(const char* data, uint32_t size) {
+    if (_indicesData) {
+        delete[] _indicesData;
+    }
+
     _indicesSize = size;
     _indicesData = new char[_indicesSize];
 
