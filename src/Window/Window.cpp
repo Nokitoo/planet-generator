@@ -29,9 +29,25 @@ bool Window::pollEvent(Event& event) {
             case SDL_QUIT:
                 event.type = Event::Type::Close;
                 return true;
+            case SDL_KEYDOWN:
+                event.type = Event::Type::KeyPressed;
+                event.keyCode = translateSDLKey(sdlEvent.key.keysym.sym);
+                if (event.keyCode == Keyboard::Key::Unknown) {
+                    return pollEvent(event);
+                }
+                _keyStates[event.keyCode] = true;
+                return true;
+            case SDL_KEYUP:
+                event.type = Event::Type::KeyReleased;
+                event.keyCode = translateSDLKey(sdlEvent.key.keysym.sym);
+                if (event.keyCode == Keyboard::Key::Unknown) {
+                    return pollEvent(event);
+                }
+                _keyStates[event.keyCode] = false;
+                return true;
             default:
                 // Event not handled
-                return true;
+                return pollEvent(event);
         }
     }
 
@@ -45,6 +61,26 @@ void Window::beginFrame() {
 
 void Window::endFrame() {
     SDL_GL_SwapWindow(_window);
+}
+
+bool Window::isKeyPressed(Keyboard::Key key) const {
+    // Key does not exists
+    if (_keyStates.find(key) == _keyStates.end()) {
+        return false;
+    }
+
+    return _keyStates.at(key);
+}
+
+const char* Window::keyToString(Keyboard::Key key) const {
+#define KEY_COND2(KEY, SDL_KEY)         \
+    if (Keyboard::Key::KEY == key) {    \
+        return #KEY;                    \
+    }
+    KEYBOARD_KEYS(KEY_COND2)
+#undef KEY_COND2
+
+    return "";
 }
 
 bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size) {
@@ -73,6 +109,8 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
         std::cerr << "Window::init: Can't create window: " << SDL_GetError() << std::endl;
         return false;
     }
+
+    initKeyStates();
 
     return initOpenGL();
 }
@@ -106,6 +144,23 @@ bool Window::initOpenGL() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     return true;
+}
+
+void Window::initKeyStates() {
+#define KEY_INIT(KEY, SDL_KEY) _keyStates[Keyboard::Key::KEY] = false;
+    KEYBOARD_KEYS(KEY_INIT)
+#undef KEY_INIT
+}
+
+Keyboard::Key Window::translateSDLKey(int SDLKeyCode) {
+#define KEY_COND(KEY, SDL_KEY)      \
+    if (SDLKeyCode == SDL_KEY) {    \
+        return Keyboard::Key::KEY;  \
+    }
+    KEYBOARD_KEYS(KEY_COND)
+#undef KEY_COND
+
+    return Keyboard::Key::Unknown;
 }
 
 void Window::destroy() {
