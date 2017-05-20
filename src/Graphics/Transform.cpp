@@ -7,12 +7,14 @@ namespace Graphics {
 Transform::Transform(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
+    _forward = camera._forward;
     isDirty(true);
 }
 
 Transform::Transform(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
+    _forward = camera._forward;
     isDirty(true);
 
     camera._pos = {};
@@ -22,6 +24,7 @@ Transform::Transform(Transform&& camera) {
 Transform& Transform::operator=(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
+    _forward = camera._forward;
     isDirty(true);
 
     return *this;
@@ -30,6 +33,7 @@ Transform& Transform::operator=(const Transform& camera) {
 Transform& Transform::operator=(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
+    _forward = camera._forward;
     isDirty(true);
 
     camera._pos = {};
@@ -88,7 +92,16 @@ void Transform::lookAt(const glm::vec3& pos) {
 }
 
 void Transform::translate(const glm::vec3& direction) {
-    _pos += getOrientation() * direction;
+    _pos += direction * getOrientation();
+    isDirty(true);
+}
+
+void Transform::rotate(float amount, const glm::vec3& axis) {
+    glm::quat pitch = glm::angleAxis(axis.x * amount, glm::vec3(1, 0, 0));
+    glm::quat yaw = glm::angleAxis(axis.y * amount, glm::vec3(0, 1, 0));
+
+    _orientation = glm::normalize(pitch * _orientation * yaw);
+
     isDirty(true);
 }
 

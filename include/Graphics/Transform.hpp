@@ -26,6 +26,7 @@ public:
 
     void lookAt(const glm::vec3& pos);
     void translate(const glm::vec3& direction);
+    void rotate(float amount, const glm::vec3& axis);
 
 private:
     glm::vec3 _pos;

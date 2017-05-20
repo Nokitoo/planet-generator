@@ -27,6 +27,9 @@ private:
     bool initCube();
     void onFrame();
 
+    void updateCameraPosition();
+    void updateCameraRotation(Window::Event& event);
+
 private:
     std::unique_ptr<Window::Window> _window = nullptr;
     std::unique_ptr<Graphics::Renderer> _renderer = nullptr;

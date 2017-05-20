@@ -34,8 +34,13 @@ bool Application::run() {
         Window::Event event;
 
         while (_window->pollEvent(event)) {
-            if (event.type == Window::Event::Type::Close) {
+            if (event.type == Window::Event::Type::Close ||
+                (event.type == Window::Event::Type::KeyPressed &&
+                    event.key.code == Window::Keyboard::Key::Escape)) {
                 return true;
+            }
+            else if (event.type == Window::Event::Type::MouseMoved) {
+                updateCameraRotation(event);
             }
         }
 
@@ -166,7 +171,11 @@ bool Application::initCube() {
 }
 
 void Application::onFrame() {
-    float moveSpeed = 0.5f;
+    updateCameraPosition();
+}
+
+void Application::updateCameraPosition() {
+    float moveSpeed = 1.0f;
     glm::vec3 moveDirection;
 
     if (_window->isKeyPressed(Window::Keyboard::Key::Q)) {
@@ -181,8 +190,26 @@ void Application::onFrame() {
     if (_window->isKeyPressed(Window::Keyboard::Key::S)) {
         moveDirection.z += moveSpeed;
     }
+    if (_window->isKeyPressed(Window::Keyboard::Key::LShift)) {
+        moveDirection.y -= moveSpeed;
+    }
+    if (_window->isKeyPressed(Window::Keyboard::Key::Space)) {
+        moveDirection.y += moveSpeed;
+    }
 
     _camera.translate(moveDirection);
+}
+
+void Application::updateCameraRotation(Window::Event& event) {
+    float rotationSpeed = 0.5f;
+    _camera.rotate(
+            glm::radians(rotationSpeed),
+            {
+                event.mouse.moveOffset.y,
+                event.mouse.moveOffset.x,
+                0.0f
+            }
+        );
 }
 
 } // Core
