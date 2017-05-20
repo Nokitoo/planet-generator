@@ -3,6 +3,7 @@
 #include <cstdint> // uint32_t
 
 #include <Graphics/API/Buffer.hpp>
+#include <Graphics/Camera.hpp>
 #include <Graphics/Renderer.hpp>
 #include <Window/Window.hpp>
 
@@ -31,6 +32,8 @@ private:
 
     Graphics::API::Buffer _cubeBuffer;
     uint32_t _cubeIndicesNb = 0;
+
+    Graphics::Camera _camera;
 };
 
 } // Core

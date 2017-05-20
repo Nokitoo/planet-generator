@@ -22,7 +22,7 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(const API::Buffer& buffer, uint32_t indicesNb);
+    void render(Camera& camera, const API::Buffer& buffer, uint32_t indicesNb);
 
 private:
     // Only the Renderer::create can create the renderer
@@ -31,12 +31,9 @@ private:
 
 private:
     bool initShaderProgram();
-    bool initCamera();
 
 private:
     API::ShaderProgram _shaderProgram;
-
-    Camera _camera;
 
     GLuint _viewUniformLocation;
     GLuint _projUniformLocation;

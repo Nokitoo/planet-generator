@@ -19,15 +19,15 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(const API::Buffer& buffer, uint32_t indicesNb) {
+void Renderer::render(Camera& camera, const API::Buffer& buffer, uint32_t indicesNb) {
     glUniformMatrix4fv(_viewUniformLocation,
         1,
         GL_FALSE,
-        glm::value_ptr(_camera.getView()));
+        glm::value_ptr(camera.getView()));
     glUniformMatrix4fv(_projUniformLocation,
         1,
         GL_FALSE,
-        glm::value_ptr(_camera.getProj()));
+        glm::value_ptr(camera.getProj()));
 
     buffer.bind();
     glDrawElements(
@@ -39,7 +39,7 @@ void Renderer::render(const API::Buffer& buffer, uint32_t indicesNb) {
 }
 
 bool Renderer::init() {
-    return initShaderProgram() && initCamera();
+    return initShaderProgram();
 }
 
 bool Renderer::initShaderProgram() {
@@ -59,12 +59,6 @@ bool Renderer::initShaderProgram() {
     }
 
     _shaderProgram.use();
-
-    return true;
-}
-
-bool Renderer::initCamera() {
-    _camera.setPos({0.0f, 0.0f, 10.0f});
 
     _viewUniformLocation = _shaderProgram.getUniformLocation("view");
     _projUniformLocation = _shaderProgram.getUniformLocation("proj");

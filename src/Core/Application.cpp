@@ -23,6 +23,8 @@ bool Application::init() {
         return false;
     }
 
+    _camera.setPos({0.0f, 0.0f, 10.0f});
+
     return initCube();
 }
 
@@ -37,7 +39,7 @@ bool Application::run() {
         }
 
         _window->beginFrame();
-        _renderer->render(_cubeBuffer, _cubeIndicesNb);
+        _renderer->render(_camera, _cubeBuffer, _cubeIndicesNb);
         _window->endFrame();
     }
 
