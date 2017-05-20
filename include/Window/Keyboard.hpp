@@ -46,7 +46,10 @@
     MACRO(RControl, SDLK_RCTRL)     \
     MACRO(RShift, SDLK_RSHIFT)      \
     MACRO(RAlt, SDLK_RALT)          \
-    MACRO(RSystem, SDLK_RGUI)
+    MACRO(RSystem, SDLK_RGUI)       \
+                                    \
+    MACRO(Escape, SDLK_ESCAPE)      \
+    MACRO(Space, SDLK_SPACE)
 
 #define KEYBOARD_ENUM(KEY, SDL_KEY) KEY,
 

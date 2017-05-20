@@ -8,6 +8,7 @@
 
 #include <Window/Event.hpp>
 #include <Window/Keyboard.hpp>
+#include <Window/Mouse.hpp>
 
 // We don't want to include SDL2.hpp in Window.hpp
 struct SDL_Window;
@@ -34,15 +35,21 @@ public:
     bool isKeyPressed(Keyboard::Key key) const;
     const char* keyToString(Keyboard::Key key) const;
 
+    bool isMouseButtonPressed(Mouse::Button button) const;
+    const char* mouseButtonToString(Mouse::Button button) const;
+
 private:
     // Only the Window::create can create the window
     Window() = default;
 
     bool init(const std::string& title, const glm::ivec2& pos, const glm::ivec2& size);
     bool initOpenGL();
-    void initKeyStates();
 
+    void initKeyStates();
     Keyboard::Key translateSDLKey(int SDLKeyCode);
+
+    void initMouseStates();
+    Mouse::Button translateSDLMouseButton(int SDLButtonCode);
 
     void destroy();
 
@@ -53,6 +60,7 @@ private:
     glm::ivec2  _size;
 
     std::unordered_map<Keyboard::Key, bool> _keyStates;
+    std::unordered_map<Mouse::Button, bool> _mouseStates;
 };
 
 } // Window

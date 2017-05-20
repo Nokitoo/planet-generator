@@ -1,4 +1,7 @@
+#include <cstdint> // uint32_t
+
 #include <Window/Keyboard.hpp>
+#include <Window/Mouse.hpp>
 
 namespace Window {
 
@@ -7,12 +10,43 @@ namespace Window {
         enum class Type : uint32_t {
             Close,
             KeyPressed,
-            KeyReleased
+            KeyReleased,
+            MouseMoved,
+            MousePressed,
+            MouseReleased,
+            MouseScroll
+        };
+
+        struct Key {
+            Keyboard::Key code;
+        };
+
+        struct Mouse {
+            Window::Mouse::Button button;
+
+            // Don't use glm::vec2 otheriwe the compiler can't find a default constructor of Window::Event
+            struct {
+                int32_t x;
+                int32_t y;
+            } scrollOffset;
+
+            struct {
+                int32_t x;
+                int32_t y;
+            } moveOffset;
+
+            struct {
+                int32_t x;
+                int32_t y;
+            } pos;
         };
 
         Type type;
 
-        Keyboard::Key keyCode;
+        union {
+            Key key;
+            Event::Mouse mouse;
+        };
     };
 
 }

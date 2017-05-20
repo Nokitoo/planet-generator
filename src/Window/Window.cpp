@@ -31,19 +31,39 @@ bool Window::pollEvent(Event& event) {
                 return true;
             case SDL_KEYDOWN:
                 event.type = Event::Type::KeyPressed;
-                event.keyCode = translateSDLKey(sdlEvent.key.keysym.sym);
-                if (event.keyCode == Keyboard::Key::Unknown) {
+                event.key.code = translateSDLKey(sdlEvent.key.keysym.sym);
+                if (event.key.code == Keyboard::Key::Unknown) {
                     return pollEvent(event);
                 }
-                _keyStates[event.keyCode] = true;
+                _keyStates[event.key.code] = true;
                 return true;
             case SDL_KEYUP:
                 event.type = Event::Type::KeyReleased;
-                event.keyCode = translateSDLKey(sdlEvent.key.keysym.sym);
-                if (event.keyCode == Keyboard::Key::Unknown) {
+                event.key.code = translateSDLKey(sdlEvent.key.keysym.sym);
+                if (event.key.code == Keyboard::Key::Unknown) {
                     return pollEvent(event);
                 }
-                _keyStates[event.keyCode] = false;
+                _keyStates[event.key.code] = false;
+                return true;
+            case SDL_MOUSEMOTION:
+                event.type = Event::Type::MouseMoved;
+                event.mouse.pos = {sdlEvent.button.x, sdlEvent.button.y};
+                event.mouse.moveOffset = {sdlEvent.motion.xrel, sdlEvent.motion.yrel};
+                return true;
+            case SDL_MOUSEBUTTONDOWN:
+                event.type = Event::Type::MousePressed;
+                event.mouse.pos = {sdlEvent.button.x, sdlEvent.button.y};
+                event.mouse.button = translateSDLMouseButton(sdlEvent.button.button);
+                return true;
+            case SDL_MOUSEBUTTONUP:
+                event.type = Event::Type::MouseReleased;
+                event.mouse.pos = {sdlEvent.button.x, sdlEvent.button.y};
+                event.mouse.button = translateSDLMouseButton(sdlEvent.button.button);
+                return true;
+            case SDL_MOUSEWHEEL:
+                event.type = Event::Type::MouseScroll;
+                event.mouse.pos = {sdlEvent.button.x, sdlEvent.button.y};
+                event.mouse.scrollOffset = {sdlEvent.wheel.x, sdlEvent.wheel.y};
                 return true;
             default:
                 // Event not handled
@@ -73,12 +93,32 @@ bool Window::isKeyPressed(Keyboard::Key key) const {
 }
 
 const char* Window::keyToString(Keyboard::Key key) const {
-#define KEY_COND2(KEY, SDL_KEY)         \
+#define KEY_COND(KEY, SDL_KEY)          \
     if (Keyboard::Key::KEY == key) {    \
         return #KEY;                    \
     }
-    KEYBOARD_KEYS(KEY_COND2)
-#undef KEY_COND2
+    KEYBOARD_KEYS(KEY_COND)
+#undef KEY_COND
+
+    return "";
+}
+
+bool Window::isMouseButtonPressed(Mouse::Button button) const {
+    // Mouse button does not exists
+    if (_mouseStates.find(button) == _mouseStates.end()) {
+        return false;
+    }
+
+    return _mouseStates.at(button);
+}
+
+const char* Window::mouseButtonToString(Mouse::Button button) const {
+#define MOUSE_COND(BUTTON, SDL_BUTTON)         \
+    if (Mouse::Button::BUTTON == button) {     \
+        return #BUTTON;                        \
+    }
+    MOUSE_BUTTONS(MOUSE_COND)
+#undef MOUSE_COND
 
     return "";
 }
@@ -111,6 +151,14 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
     }
 
     initKeyStates();
+    initMouseStates();
+
+    // Remove unwanted events from window creation
+    // (Mouse motion whose value is very high)
+    Event event;
+    while (pollEvent(event)) {}
+
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 
     return initOpenGL();
 }
@@ -161,6 +209,23 @@ Keyboard::Key Window::translateSDLKey(int SDLKeyCode) {
 #undef KEY_COND
 
     return Keyboard::Key::Unknown;
+}
+
+void Window::initMouseStates() {
+#define MOUSE_INIT(BUTTON, SDL_BUTTON) _mouseStates[Mouse::Button::BUTTON] = false;
+    MOUSE_BUTTONS(MOUSE_INIT)
+#undef MOUSE_INIT
+}
+
+Mouse::Button Window::translateSDLMouseButton(int SDLButtonCode) {
+#define MOUSE_COND(BUTTON, SDL_BUTTON)  \
+    if (SDLButtonCode == SDL_BUTTON) {  \
+        return Mouse::Button::BUTTON;   \
+    }
+    MOUSE_BUTTONS(MOUSE_COND)
+#undef MOUSE_COND
+
+    return Mouse::Button::Unknown;
 }
 
 void Window::destroy() {
