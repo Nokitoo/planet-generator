@@ -4,24 +4,20 @@
 
 namespace Graphics {
 
-Camera::Camera(const Camera& camera) {
+Camera::Camera(const Camera& camera): Transform(camera) {
     _fov = camera._fov;
     _near = camera._near;
     _far = camera._far;
     _aspect = camera._aspect;
-    _pos = camera._pos;
     _needUpdateProj = true;
-    _needUpdateView = true;
 }
 
-Camera::Camera(Camera&& camera) {
+Camera::Camera(Camera&& camera): Transform(camera) {
     _fov = camera._fov;
     _near = camera._near;
     _far = camera._far;
     _aspect = camera._aspect;
-    _pos = camera._pos;
     _needUpdateProj = true;
-    _needUpdateView = true;
 }
 
 Camera& Camera::operator=(const Camera& camera) {
@@ -29,9 +25,9 @@ Camera& Camera::operator=(const Camera& camera) {
     _near = camera._near;
     _far = camera._far;
     _aspect = camera._aspect;
-    _pos = camera._pos;
     _needUpdateProj = true;
-    _needUpdateView = true;
+
+    Transform::operator=(camera);
 
     return *this;
 }
@@ -41,16 +37,17 @@ Camera& Camera::operator=(Camera&& camera) {
     _near = camera._near;
     _far = camera._far;
     _aspect = camera._aspect;
-    _pos = camera._pos;
     _needUpdateProj = true;
-    _needUpdateView = true;
+
+    Transform::operator=(camera);
 
     return *this;
 }
 
 const glm::mat4& Camera::getView() {
-    if (_needUpdateView) {
+    if (isDirty()) {
         updateView();
+        isDirty(false);
     }
 
     return _view;
@@ -80,10 +77,6 @@ float Camera::getAspect() const {
     return _aspect;
 }
 
-const glm::vec3& Camera::getPos() const {
-    return _pos;
-}
-
 void Camera::setFov(float fov) {
     _fov = fov;
 
@@ -108,39 +101,6 @@ void Camera::setAspect(float aspect) {
     _needUpdateProj = true;
 }
 
-void Camera::setPos(const glm::vec3& pos) {
-    _pos = pos;
-
-    _needUpdateView = true;
-}
-
-// Calculations from http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
-void Camera::lookAt(const glm::vec3& pos) {
-    glm::vec3 u = glm::normalize(pos - _pos);
-    glm::vec3 v = glm::normalize(_forward);
-
-    float normUNormV = sqrt(glm::dot(u, u) * glm::dot(v, v));
-    float realPart = normUNormV + glm::dot(u, v);
-    glm::vec3 w;
-
-    if (realPart < 1.e-6f * normUNormV)
-    {
-        /* If u and v are exactly opposite, rotate 180 degrees
-         * around an arbitrary orthogonal axis. Axis normalisation
-         * can happen later, when we normalise the quaternion. */
-        realPart = 0.0f;
-        w = abs(u.x) > abs(u.z) ? glm::vec3(-u.y, u.x, 0.f)
-                                : glm::vec3(0.f, -u.z, u.y);
-    }
-    else
-    {
-        /* Otherwise, build quaternion the standard way. */
-        w = cross(u, v);
-    }
-
-    _orientation = glm::normalize(glm::quat(realPart, w.x, w.y, w.z));
-}
-
 void Camera::updateProj() {
     _proj = glm::perspective(glm::radians(_fov), _aspect, _near, _far);
 
@@ -148,11 +108,9 @@ void Camera::updateProj() {
 }
 
 void Camera::updateView() {
-    glm::mat4 translate = glm::translate(glm::mat4(1.0), -_pos);
-    glm::mat4 rotate = glm::mat4_cast(_orientation);
+    glm::mat4 translate = glm::translate(glm::mat4(1.0), -getPos());
+    glm::mat4 rotate = glm::mat4_cast(getOrientation());
     _view = rotate * translate;
-
-    _needUpdateView = false;
 }
 
 } // Graphics
