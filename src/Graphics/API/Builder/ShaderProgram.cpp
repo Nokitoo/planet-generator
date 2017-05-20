@@ -1,6 +1,6 @@
-#include <iostream>
+#include <iostream> // std::cerr
 
-#include <Graphics/API/Builder/ShaderProgram.hpp>
+#include <Graphics/API/Builder/ShaderProgram.hpp> // Graphics::API::Builder::ShaderProgram
 
 namespace Graphics {
 namespace API {

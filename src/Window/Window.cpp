@@ -1,9 +1,9 @@
-#include <iostream>
+#include <iostream> // std::cerr
 
-#include <SDL.h>
-#include <gl/glew.h>
+#include <SDL.h> // SDL_Window
+#include <gl/glew.h> // OpenGL functions
 
-#include <Window/Window.hpp>
+#include <Window/Window.hpp> // Window::Window
 
 namespace Window {
 

@@ -1,7 +1,7 @@
 #include <cstdint> // uint32_t
 
-#include <Window/Keyboard.hpp>
-#include <Window/Mouse.hpp>
+#include <Window/Keyboard.hpp> // Window::Keyboard::Key
+#include <Window/Mouse.hpp> // Window::Mouse::Button
 
 namespace Window {
 

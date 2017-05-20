@@ -2,10 +2,10 @@
 
 #include <cstdint> // uint32_t
 
-#include <Graphics/API/Buffer.hpp>
-#include <Graphics/Camera.hpp>
-#include <Graphics/Renderer.hpp>
-#include <Window/Window.hpp>
+#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
+#include <Graphics/Camera.hpp> // Graphics::Camera
+#include <Graphics/Renderer.hpp> // Graphics::Renderer
+#include <Window/Window.hpp> // Window::Window
 
 namespace Core {
 

@@ -1,4 +1,4 @@
-#include <Graphics/API/ShaderProgram.hpp>
+#include <Graphics/API/ShaderProgram.hpp> // Graphics::API::ShaderProgram
 
 namespace Graphics {
 namespace API {

@@ -1,6 +1,6 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::perspective
 
-#include <Graphics/Camera.hpp>
+#include <Graphics/Camera.hpp> // Graphics::Camera
 
 namespace Graphics {
 

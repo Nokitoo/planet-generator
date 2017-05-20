@@ -1,10 +1,10 @@
-#include <iostream>
+#include <iostream> // std::cerr
 
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
-#include <Graphics/API/Builder/ShaderProgram.hpp>
+#include <Graphics/API/Builder/ShaderProgram.hpp> // Graphics::API::Builder::ShaderProgram
 
-#include <Graphics/Renderer.hpp>
+#include <Graphics/Renderer.hpp> // Graphics::Renderer
 
 namespace Graphics {
 

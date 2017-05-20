@@ -1,6 +1,6 @@
-#include <iostream>
+#include <iostream> // std::cerr
 
-#include <Graphics/API/Builder/Buffer.hpp>
+#include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 
 namespace Graphics {
 namespace API {

@@ -2,7 +2,7 @@
 
 #include <glm/mat4x4.hpp> // glm::mat4
 
-#include <Graphics/Transform.hpp>
+#include <Graphics/Transform.hpp> // Graphics::Transform
 
 namespace Graphics {
 

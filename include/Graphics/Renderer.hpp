@@ -4,9 +4,9 @@
 
 #include <GL/glew.h> // GLuint
 
-#include <Graphics/API/Buffer.hpp>
-#include <Graphics/API/ShaderProgram.hpp>
-#include <Graphics/Camera.hpp>
+#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
+#include <Graphics/API/ShaderProgram.hpp> // Graphics::API::ShaderProgram
+#include <Graphics/Camera.hpp> // Graphics::Camera
 
 namespace Graphics {
 

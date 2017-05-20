@@ -1,4 +1,4 @@
-#include <Graphics/API/Buffer.hpp>
+#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
 
 namespace Graphics {
 namespace API {

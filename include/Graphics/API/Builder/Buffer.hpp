@@ -3,7 +3,7 @@
 #include <vector> // std::vector
 #include <cstdint> // uint32_t
 
-#include <Graphics/API/Buffer.hpp>
+#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
 
 namespace Graphics {
 namespace API {

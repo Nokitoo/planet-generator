@@ -1,4 +1,4 @@
-#include <Core/Application.hpp>
+#include <Core/Application.hpp> // Core::Application
 
 int main(int, char**){
     Core::Application app;

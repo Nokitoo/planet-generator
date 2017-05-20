@@ -4,7 +4,7 @@
 #include <string> // std::string
 #include <unordered_map> // std::unordered_map
 
-#include <Graphics/API/ShaderProgram.hpp>
+#include <Graphics/API/ShaderProgram.hpp> // Graphics::API::ShaderProgram
 
 namespace Graphics {
 namespace API {

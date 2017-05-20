@@ -1,10 +1,10 @@
-#include <iostream>
+#include <iostream> // std::cerr
 
 #include <glm/vec3.hpp> // glm::vec3
 
-#include <Graphics/API/Builder/Buffer.hpp>
+#include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 
-#include <Core/Application.hpp>
+#include <Core/Application.hpp> // Graphics::Core::Application
 
 namespace Core {
 

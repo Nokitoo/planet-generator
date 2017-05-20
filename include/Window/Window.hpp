@@ -6,9 +6,9 @@
 
 #include <glm/vec2.hpp> // glm::ivec2
 
-#include <Window/Event.hpp>
-#include <Window/Keyboard.hpp>
-#include <Window/Mouse.hpp>
+#include <Window/Event.hpp> // Window::Event
+#include <Window/Keyboard.hpp> // Window::Keyboard::Key
+#include <Window/Mouse.hpp> // Window::Mouse::Button
 
 // We don't want to include SDL2.hpp in Window.hpp
 struct SDL_Window;
