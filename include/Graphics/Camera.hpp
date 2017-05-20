@@ -50,4 +50,4 @@ private:
     glm::mat4 _view;
 };
 
-} // Graphics
+} // Namespace Graphics

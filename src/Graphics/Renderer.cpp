@@ -74,4 +74,4 @@ bool Renderer::initShaderProgram() {
     return true;
 }
 
-} // Graphics
+} // Namespace Graphics

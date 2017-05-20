@@ -34,5 +34,5 @@ private:
     GLuint                                  _EBO = 0;
 };
 
-} // API
-} // Graphics
+} // Namespace API
+} // Namespace Graphics

@@ -44,5 +44,5 @@ void Buffer::bind() const {
     glBindVertexArray(_VAO);
 }
 
-} // API
-} // Graphics
+} // Namespace API
+} // Namespace Graphics

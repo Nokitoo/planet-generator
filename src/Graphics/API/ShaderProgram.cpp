@@ -44,5 +44,5 @@ GLuint ShaderProgram::getUniformLocation(const char* location) const {
     return glGetUniformLocation(_shaderProgram, location);
 }
 
-} // API
-} // Graphics
+} // Namespace API
+} // Namespace Graphics

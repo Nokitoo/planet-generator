@@ -63,5 +63,5 @@ private:
     std::unordered_map<Mouse::Button, bool> _mouseStates;
 };
 
-} // Window
+} // Namespace Window
 

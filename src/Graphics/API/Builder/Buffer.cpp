@@ -70,6 +70,6 @@ void Buffer::setIndices(const char* data, uint32_t size) {
 }
 
 
-} // Builder
-} // API
-} // Graphics
+} // Namespace Builder
+} // Namespace API
+} // Namespace Graphics

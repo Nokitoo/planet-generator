@@ -36,4 +36,4 @@ private:
     bool _dirty = true;
 };
 
-} // Graphics
+} // Namespace Graphics

@@ -39,5 +39,5 @@ private:
     GLuint _projUniformLocation;
 };
 
-} // Graphics
+} // Namespace Graphics
 

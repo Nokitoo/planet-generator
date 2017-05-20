@@ -17,5 +17,5 @@ enum class Button : int {
     MOUSE_BUTTONS(MOUSE_ENUM)
 };
 
-} // Keyboard
-} // Window
+} // Namespace Mouse
+} // Namespace Window

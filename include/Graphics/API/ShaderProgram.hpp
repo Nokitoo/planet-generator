@@ -33,5 +33,5 @@ private:
     std::unordered_map<GLenum, GLuint> _shaders;
 };
 
-} // API
-} // Graphics
+} // Namespace API
+} // Namespace Graphics

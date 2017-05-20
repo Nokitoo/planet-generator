@@ -105,4 +105,4 @@ void Transform::rotate(float amount, const glm::vec3& axis) {
     isDirty(true);
 }
 
-} // Graphics
+} // Namespace Graphics

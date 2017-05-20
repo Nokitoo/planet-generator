@@ -61,5 +61,5 @@ enum class Key : int {
     KEYBOARD_KEYS(KEYBOARD_ENUM)
 };
 
-} // Keyboard
-} // Window
+} // Namespace Keyboard
+} // Namespace Window

@@ -113,4 +113,4 @@ void Camera::updateView() {
     _view = rotate * translate;
 }
 
-} // Graphics
+} // Namespace Graphics

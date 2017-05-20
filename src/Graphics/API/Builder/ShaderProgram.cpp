@@ -116,6 +116,6 @@ bool ShaderProgram::checkProgramStatus(GLuint shaderProgram, GLenum statusName) 
     return true;
 }
 
-} // Builder
-} // API
-} // Graphics
+} // Namespace Builder
+} // Namespace API
+} // Namespace Graphics

@@ -33,6 +33,6 @@ private:
     std::unordered_map<GLenum, std::ifstream> _shadersFiles;
 };
 
-} // Builder
-} // API
-} // Graphics
+} // Namespace Builder
+} // Namespace API
+} // Namespace Graphics

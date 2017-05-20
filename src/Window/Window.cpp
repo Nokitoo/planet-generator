@@ -242,4 +242,4 @@ void Window::destroy() {
     SDL_Quit();
 }
 
-} // Window
+} // Namespace Window

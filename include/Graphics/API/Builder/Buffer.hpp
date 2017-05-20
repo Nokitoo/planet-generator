@@ -46,6 +46,6 @@ private:
     uint32_t _indicesSize = 0;
 };
 
-} // Builder
-} // API
-} // Graphics
+} // Namespace Builder
+} // Namespace API
+} // Namespace Graphics
