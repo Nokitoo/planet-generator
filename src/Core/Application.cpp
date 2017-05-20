@@ -40,6 +40,7 @@ bool Application::run() {
         }
 
         _window->beginFrame();
+        onFrame();
         _renderer->render(_camera, _cubeBuffer, _cubeIndicesNb);
         _window->endFrame();
     }
@@ -162,6 +163,26 @@ bool Application::initCube() {
     }
 
     return true;
+}
+
+void Application::onFrame() {
+    float moveSpeed = 0.5f;
+    glm::vec3 moveDirection;
+
+    if (_window->isKeyPressed(Window::Keyboard::Key::Q)) {
+        moveDirection.x -= moveSpeed;
+    }
+    if (_window->isKeyPressed(Window::Keyboard::Key::D)) {
+        moveDirection.x += moveSpeed;
+    }
+    if (_window->isKeyPressed(Window::Keyboard::Key::Z)) {
+        moveDirection.z -= moveSpeed;
+    }
+    if (_window->isKeyPressed(Window::Keyboard::Key::S)) {
+        moveDirection.z += moveSpeed;
+    }
+
+    _camera.translate(moveDirection);
 }
 
 } // Core

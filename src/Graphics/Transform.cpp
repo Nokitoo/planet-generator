@@ -62,7 +62,7 @@ void Transform::isDirty(bool dirty) {
 // Calculations from http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
 void Transform::lookAt(const glm::vec3& pos) {
     glm::vec3 u = glm::normalize(pos - _pos);
-    glm::vec3 v = glm::normalize(_forward);
+    glm::vec3 v = _forward;
 
     float normUNormV = sqrt(glm::dot(u, u) * glm::dot(v, v));
     float realPart = normUNormV + glm::dot(u, v);
@@ -84,6 +84,11 @@ void Transform::lookAt(const glm::vec3& pos) {
     }
 
     _orientation = glm::normalize(glm::quat(realPart, w.x, w.y, w.z));
+    isDirty(true);
+}
+
+void Transform::translate(const glm::vec3& direction) {
+    _pos += getOrientation() * direction;
     isDirty(true);
 }
 

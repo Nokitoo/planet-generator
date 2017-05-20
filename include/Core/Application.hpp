@@ -25,6 +25,7 @@ public:
 
 private:
     bool initCube();
+    void onFrame();
 
 private:
     std::unique_ptr<Window::Window> _window = nullptr;

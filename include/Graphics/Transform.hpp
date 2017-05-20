@@ -25,6 +25,7 @@ public:
     void isDirty(bool dirty);
 
     void lookAt(const glm::vec3& pos);
+    void translate(const glm::vec3& direction);
 
 private:
     glm::vec3 _pos;
