@@ -23,7 +23,7 @@ bool Application::init() {
         return false;
     }
 
-    _camera.setPos({15.0f, 15.0f, 15.0f});
+    _camera.setPos({0.0f, 30.0f, 30.0f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
 
     return initCube();
