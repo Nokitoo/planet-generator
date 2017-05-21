@@ -40,7 +40,7 @@ private:
 
     Graphics::Camera _camera;
 
-    uint32_t _quadTreeLevel = 1;
+    uint32_t _quadTreeLevel = 4;
 };
 
 } // Core
