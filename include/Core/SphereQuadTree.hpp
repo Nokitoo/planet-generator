@@ -39,5 +39,5 @@ private:
     Graphics::API::Buffer _buffer;
 };
 
-} // Core
+} // Namespace Core
 

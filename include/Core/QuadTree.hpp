@@ -63,5 +63,5 @@ private:
     bool _split = false;
 };
 
-} // Core
+} // Namespace Core
 

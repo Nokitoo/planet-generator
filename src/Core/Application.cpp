@@ -112,5 +112,5 @@ void Application::updateQuadTreeLevel(Window::Event& event) {
     }
 }
 
-} // Core
+} // Namespace Core
 

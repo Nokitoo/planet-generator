@@ -34,5 +34,5 @@ private:
 
 #include <System/Vector.inl>
 
-} // System
+} // Namespace System
 

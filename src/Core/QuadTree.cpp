@@ -101,5 +101,5 @@ void QuadTree::merge() {
     _split = false;
 }
 
-} // Core
+} // Namespace Core
 

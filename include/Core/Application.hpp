@@ -43,5 +43,5 @@ private:
     uint32_t _quadTreeLevel = 4;
 };
 
-} // Core
+} // Namespace Core
 

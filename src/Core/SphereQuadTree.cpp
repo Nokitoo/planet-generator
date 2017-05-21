@@ -167,5 +167,5 @@ void SphereQuadTree::initBufferBuilder() {
     });
 }
 
-} // Core
+} // Namespace Core
 
