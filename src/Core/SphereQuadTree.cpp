@@ -1,3 +1,5 @@
+#include <iostream> // std::cerr
+
 #include <Core/SphereQuadTree.hpp> // Graphics::Core::SphereQuadTree
 
 namespace Core {
@@ -52,15 +54,122 @@ SphereQuadTree::SphereQuadTree(float size) {
     initQuadTree(_backQuadTree.get(), 4);
     initQuadTree(_topQuadTree.get(), 4);
     initQuadTree(_bottomQuadTree.get(), 4);
+
+    initBufferBuilder();
 }
 
-void SphereQuadTree::update(std::vector<const Graphics::API::Buffer*>& buffers) {
-    _leftQuadTree->update(buffers);
-    _rightQuadTree->update(buffers);
-    _frontQuadTree->update(buffers);
-    _backQuadTree->update(buffers);
-    _topQuadTree->update(buffers);
-    _bottomQuadTree->update(buffers);
+SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
+    if (quadTree._leftQuadTree != nullptr) {
+        _leftQuadTree = std::move(quadTree._leftQuadTree);
+    }
+    if (quadTree._rightQuadTree != nullptr) {
+        _rightQuadTree = std::move(quadTree._rightQuadTree);
+    }
+    if (quadTree._frontQuadTree != nullptr) {
+        _frontQuadTree = std::move(quadTree._frontQuadTree);
+    }
+    if (quadTree._backQuadTree != nullptr) {
+        _backQuadTree = std::move(quadTree._backQuadTree);
+    }
+    if (quadTree._topQuadTree != nullptr) {
+        _topQuadTree = std::move(quadTree._topQuadTree);
+    }
+    if (quadTree._bottomQuadTree != nullptr) {
+        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
+    }
+
+    initBufferBuilder();
+    _buffer = std::move(quadTree._buffer);
+}
+
+SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
+    if (quadTree._leftQuadTree != nullptr) {
+        _leftQuadTree = std::move(quadTree._leftQuadTree);
+    }
+    if (quadTree._rightQuadTree != nullptr) {
+        _rightQuadTree = std::move(quadTree._rightQuadTree);
+    }
+    if (quadTree._frontQuadTree != nullptr) {
+        _frontQuadTree = std::move(quadTree._frontQuadTree);
+    }
+    if (quadTree._backQuadTree != nullptr) {
+        _backQuadTree = std::move(quadTree._backQuadTree);
+    }
+    if (quadTree._topQuadTree != nullptr) {
+        _topQuadTree = std::move(quadTree._topQuadTree);
+    }
+    if (quadTree._bottomQuadTree != nullptr) {
+        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
+    }
+
+    initBufferBuilder();
+    _buffer = std::move(quadTree._buffer);
+
+    return *this;
+}
+
+void SphereQuadTree::update() {
+    std::vector<QuadTree::Vertex> vertices;
+    std::vector<uint32_t> indices;
+
+    _leftQuadTree->update(vertices, indices);
+    _rightQuadTree->update(vertices, indices);
+    _frontQuadTree->update(vertices, indices);
+    _backQuadTree->update(vertices, indices);
+    _topQuadTree->update(vertices, indices);
+    _bottomQuadTree->update(vertices, indices);
+
+    _bufferBuilder.setVertices(
+        (char*)vertices.data(),
+        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex)
+        );
+    _bufferBuilder.setIndices(
+        (char*)indices.data(),
+        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t)
+        );
+
+    Graphics::API::Buffer buffer;
+    if (!_bufferBuilder.build(buffer)) {
+        // TODO: replace this with logger
+        std::cerr << "QuadTree::buildBuffer::init: failed to create renderer" << std::endl;
+        return;
+    }
+
+    _buffer = std::move(buffer);
+}
+
+const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
+    return _buffer;
+}
+
+void SphereQuadTree::initBufferBuilder() {
+    // Position attribute
+    _bufferBuilder.addAttribute({
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, pos)
+    });
+    // Color attribute
+    _bufferBuilder.addAttribute({
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, color)
+    });
+    // Normal attribute
+    _bufferBuilder.addAttribute({
+        2,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, normal)
+    });
 }
 
 void SphereQuadTree::initQuadTree(QuadTree* quadTree, uint32_t maxRecurse) {

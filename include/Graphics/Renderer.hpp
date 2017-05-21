@@ -4,7 +4,7 @@
 
 #include <GL/glew.h> // GLuint
 
-#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
+#include <Core/SphereQuadTree.hpp> // Graphics::API::Buffer
 #include <Graphics/API/ShaderProgram.hpp> // Graphics::API::ShaderProgram
 #include <Graphics/Camera.hpp> // Graphics::Camera
 
@@ -22,7 +22,7 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(Camera& camera, const std::vector<const API::Buffer*>& buffers);
+    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
 
 private:
     // Only the Renderer::create can create the renderer

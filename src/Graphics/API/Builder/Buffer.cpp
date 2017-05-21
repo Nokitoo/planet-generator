@@ -48,6 +48,9 @@ bool Buffer::build(API::Buffer& buffer) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    buffer._verticesNb = _verticesSize > 0 && _verticesData != nullptr ? _verticesSize / sizeof(_verticesData[0]) : 0;
+    buffer._indicesNb = _indicesSize > 0 && _indicesData != nullptr ? _indicesSize / sizeof(_indicesData[0]) : 0;
+
     return true;
 }
 

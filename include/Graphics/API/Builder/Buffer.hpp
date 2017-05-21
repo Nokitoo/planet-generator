@@ -41,9 +41,11 @@ private:
 
     char* _verticesData = nullptr;
     uint32_t _verticesSize = 0;
+    uint32_t _verticesNb = 0;
 
     char* _indicesData = nullptr;
     uint32_t _indicesSize = 0;
+    uint32_t _indicesNb = 0;
 };
 
 } // Namespace Builder

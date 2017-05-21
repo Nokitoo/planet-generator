@@ -35,8 +35,7 @@ private:
     std::unique_ptr<Window::Window> _window = nullptr;
     std::unique_ptr<Graphics::Renderer> _renderer = nullptr;
 
-    std::unique_ptr<Core::SphereQuadTree> _sphereQuadTree;
-    std::vector<const Graphics::API::Buffer*> _buffers;
+    std::vector<std::unique_ptr<Core::SphereQuadTree>> _planets;
 
     Graphics::Camera _camera;
 };

@@ -26,7 +26,7 @@ bool Application::init() {
     _camera.setPos({sphereRadius / 2.0f, sphereRadius * 1.5f, sphereRadius * 1.5f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
     _camera.setFar(1000.0f);
-    _sphereQuadTree = std::make_unique<Core::SphereQuadTree>(sphereRadius);
+    _planets.push_back(std::make_unique<Core::SphereQuadTree>(sphereRadius));
 
     return true;
 }
@@ -48,7 +48,7 @@ bool Application::run() {
 
         _window->beginFrame();
         onFrame();
-        _renderer->render(_camera, _buffers);
+        _renderer->render(_camera, _planets);
         _window->endFrame();
     }
 
@@ -56,8 +56,13 @@ bool Application::run() {
 }
 
 void Application::onFrame() {
-    _buffers.clear();
-    _sphereQuadTree->update(_buffers);
+    static uint32_t i = 0;
+    if (i == 0) {
+        ++i;
+        for (auto& planet: _planets) {
+            planet->update();
+        }
+    }
     updateCameraPosition();
 }
 

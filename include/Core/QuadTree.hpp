@@ -6,14 +6,19 @@
 
 #include <glm/vec3.hpp> // glm::vec3
 
-#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
-
 namespace Core {
 
 class QuadTree {
     friend class SphereQuadTree;
 
 private:
+    // TODO: Move elsewhere
+    struct Vertex {
+        glm::vec3 pos;
+        glm::vec3 color;
+        glm::vec3 normal;
+    };
+
     struct Children {
         std::unique_ptr<QuadTree> topLeft = nullptr;
         std::unique_ptr<QuadTree> topRight = nullptr;
@@ -36,17 +41,10 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(std::vector<const Graphics::API::Buffer*>& buffers);
+    void update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
 
 private:
     void split();
-
-private:
-    bool buildBuffer(float size,
-        const glm::vec3& pos,
-        const glm::vec3& widthDir,
-        const glm::vec3& heightDir,
-        const glm::vec3& normal);
 
 private:
     Children _children;
@@ -57,7 +55,7 @@ private:
     glm::vec3 _heightDir;
     glm::vec3 _normal;
 
-    Graphics::API::Buffer _buffer;
+    Vertex _corners[4];
 };
 
 } // Core

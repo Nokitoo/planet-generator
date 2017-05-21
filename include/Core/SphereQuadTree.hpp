@@ -5,6 +5,7 @@
 
 #include <Core/QuadTree.hpp> // Core::QuadTree
 #include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
+#include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 
 namespace Core {
 
@@ -14,14 +15,17 @@ public:
     ~SphereQuadTree() = default;
 
     SphereQuadTree(const SphereQuadTree& quadTree) = delete;
-    SphereQuadTree(SphereQuadTree&& quadTree) = delete;
+    SphereQuadTree(SphereQuadTree&& quadTree);
 
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
-    SphereQuadTree&& operator=(SphereQuadTree&& quadTree) = delete;
+    SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    void update(std::vector<const Graphics::API::Buffer*>& buffers);
+    void update();
+
+    const Graphics::API::Buffer& getBuffer() const;
 
 private:
+    void initBufferBuilder();
     void initQuadTree(QuadTree* quadTree, uint32_t maxRecurse);
 
 private:
@@ -31,6 +35,9 @@ private:
     std::unique_ptr<QuadTree> _backQuadTree = nullptr;
     std::unique_ptr<QuadTree> _topQuadTree = nullptr;
     std::unique_ptr<QuadTree> _bottomQuadTree = nullptr;
+
+    Graphics::API::Builder::Buffer _bufferBuilder;
+    Graphics::API::Buffer _buffer;
 };
 
 } // Core

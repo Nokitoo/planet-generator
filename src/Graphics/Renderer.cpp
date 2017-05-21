@@ -19,7 +19,7 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(Camera& camera, const std::vector<const API::Buffer*>& buffers) {
+void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
     glUniformMatrix4fv(_viewUniformLocation,
         1,
         GL_FALSE,
@@ -29,11 +29,11 @@ void Renderer::render(Camera& camera, const std::vector<const API::Buffer*>& buf
         GL_FALSE,
         glm::value_ptr(camera.getProj()));
 
-    for (const API::Buffer* buffer: buffers) {
-        buffer->bind();
+    for (const auto& planet: planets) {
+        planet->getBuffer().bind();
         glDrawElements(
             GL_TRIANGLES,
-            (GLuint)6,
+            (GLuint)planet->getBuffer().getIndicesNb(),
             GL_UNSIGNED_INT,
             0
             );
