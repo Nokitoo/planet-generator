@@ -11,12 +11,14 @@
 namespace Core {
 
 class QuadTree {
+    friend class SphereQuadTree;
+
 private:
     struct Children {
-        std::unique_ptr<QuadTree> _topLeft = nullptr;
-        std::unique_ptr<QuadTree> _topRight = nullptr;
-        std::unique_ptr<QuadTree> _bottomLeft = nullptr;
-        std::unique_ptr<QuadTree> _bottomRight = nullptr;
+        std::unique_ptr<QuadTree> topLeft = nullptr;
+        std::unique_ptr<QuadTree> topRight = nullptr;
+        std::unique_ptr<QuadTree> bottomLeft = nullptr;
+        std::unique_ptr<QuadTree> bottomRight = nullptr;
     };
 
 public:
@@ -24,8 +26,7 @@ public:
         const glm::vec3& pos,
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
-        const glm::vec3& normal,
-        uint32_t maxRecurse = 4);
+        const glm::vec3& normal);
     QuadTree() = delete;
     ~QuadTree() = default;
 
@@ -38,6 +39,9 @@ public:
     void update(std::vector<const Graphics::API::Buffer*>& buffers);
 
 private:
+    void split();
+
+private:
     bool buildBuffer(float size,
         const glm::vec3& pos,
         const glm::vec3& widthDir,
@@ -46,6 +50,12 @@ private:
 
 private:
     Children _children;
+
+    float _size;
+    glm::vec3 _pos;
+    glm::vec3 _widthDir;
+    glm::vec3 _heightDir;
+    glm::vec3 _normal;
 
     Graphics::API::Buffer _buffer;
 };

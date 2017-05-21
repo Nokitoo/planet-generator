@@ -10,7 +10,7 @@ namespace Core {
 
 class SphereQuadTree {
 public:
-    SphereQuadTree(float radius, uint32_t maxRecurse = 4);
+    SphereQuadTree(float radius);
     ~SphereQuadTree() = default;
 
     SphereQuadTree(const SphereQuadTree& quadTree) = delete;
@@ -20,6 +20,9 @@ public:
     SphereQuadTree&& operator=(SphereQuadTree&& quadTree) = delete;
 
     void update(std::vector<const Graphics::API::Buffer*>& buffers);
+
+private:
+    void initQuadTree(QuadTree* quadTree, uint32_t maxRecurse);
 
 private:
     std::unique_ptr<QuadTree> _leftQuadTree = nullptr;

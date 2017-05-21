@@ -10,63 +10,57 @@ QuadTree::QuadTree(float size,
                     const glm::vec3& pos,
                     const glm::vec3& widthDir,
                     const glm::vec3& heightDir,
-                    const glm::vec3& normal,
-                    uint32_t maxRecurse) {
-    if (!maxRecurse) {
-        buildBuffer(size, pos, widthDir, heightDir, normal);
-        return;
-    }
-
-    float childrenSize = size / 2;
-    _children._topLeft = std::make_unique<QuadTree>(
-        childrenSize,
-        pos + (heightDir * childrenSize),
-        widthDir,
-        heightDir,
-        normal,
-        maxRecurse - 1
-        );
-    _children._topRight = std::make_unique<QuadTree>(
-        childrenSize,
-        pos + (widthDir * childrenSize) + (heightDir * childrenSize),
-        widthDir,
-        heightDir,
-        normal,
-        maxRecurse - 1
-        );
-    _children._bottomLeft = std::make_unique<QuadTree>(
-        childrenSize,
-        pos,
-        widthDir,
-        heightDir,
-        normal,
-        maxRecurse - 1
-        );
-    _children._bottomRight = std::make_unique<QuadTree>(
-        childrenSize,
-        pos + (widthDir * childrenSize),
-        widthDir,
-        heightDir,
-        normal,
-        maxRecurse - 1
-        );
+                    const glm::vec3& normal): _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal) {
+    buildBuffer(size, pos, widthDir, heightDir, normal);
 }
 
 void QuadTree::update(std::vector<const Graphics::API::Buffer*>& buffers) {
     buffers.push_back(&_buffer);
 
-    if (_children._topLeft) {
-        _children._topLeft->update(buffers);
+    if (_children.topLeft) {
+        _children.topLeft->update(buffers);
     }
-    if (_children._topRight) {
-        _children._topRight->update(buffers);
+    if (_children.topRight) {
+        _children.topRight->update(buffers);
     }
-    if (_children._bottomLeft) {
-        _children._bottomLeft->update(buffers);
+    if (_children.bottomLeft) {
+        _children.bottomLeft->update(buffers);
     }
-    if (_children._bottomRight) {
-        _children._bottomRight->update(buffers);
+    if (_children.bottomRight) {
+        _children.bottomRight->update(buffers);
     }
+}
+
+void QuadTree::split() {
+    float childrenSize = _size / 2;
+    _children.topLeft = std::make_unique<QuadTree>(
+        childrenSize,
+        _pos + (_heightDir * childrenSize),
+        _widthDir,
+        _heightDir,
+        _normal
+        );
+    _children.topRight = std::make_unique<QuadTree>(
+        childrenSize,
+        _pos + (_widthDir * childrenSize) + (_heightDir * childrenSize),
+        _widthDir,
+        _heightDir,
+        _normal
+        );
+    _children.bottomLeft = std::make_unique<QuadTree>(
+        childrenSize,
+        _pos,
+        _widthDir,
+        _heightDir,
+        _normal
+        );
+    _children.bottomRight = std::make_unique<QuadTree>(
+        childrenSize,
+        _pos + (_widthDir * childrenSize),
+        _widthDir,
+        _heightDir,
+        _normal
+        );
 }
 
 bool QuadTree::buildBuffer(float size,
