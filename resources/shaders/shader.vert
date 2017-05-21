@@ -10,11 +10,35 @@ layout (location = 2) out vec3 fragNormal;
 
 uniform mat4 view;
 uniform mat4 proj;
+uniform float sphereRadius = 100.0;
+
+// Formulas: http://mathproofs.blogspot.kr/2005/07/mapping-cube-to-sphere.html
+vec3 mapCubeToSphere(vec3 pos)
+{
+    float x2 = pos.x * pos.x;
+    float y2 = pos.y * pos.y;
+    float z2 = pos.z * pos.z;
+
+    pos.x = pos.x * sqrt(1.0 - (y2 * 0.5) - (z2 * 0.5) + ((y2 * z2) / 3.0));
+    pos.y = pos.y * sqrt(1.0 - (z2 * 0.5) - (x2 * 0.5) + ((z2 * x2) / 3.0));
+    pos.z = pos.z * sqrt(1.0 - (x2 * 0.5) - (y2 * 0.5) + ((x2 * y2) / 3.0));
+
+    // Convert from range [-1.0, 1.0] to range [0.0, sphereRadius]
+    pos.xy = (pos.xy / 2.0 + 0.5) * sphereRadius;
+    pos.z = (pos.z / 2.0 + 0.5) * -sphereRadius;
+    return pos;
+}
 
 void main()
 {
-    gl_Position = proj * view * vec4(inPosition, 1.0);
     fragPos = inPosition;
+
+    // Convert position to range [-1.0, 1.0]
+    fragPos.xy = fragPos.xy / sphereRadius * 2.0 - 1.0;
+    fragPos.z = fragPos.z / -sphereRadius * 2.0 - 1.0;
+
+    fragPos = mapCubeToSphere(fragPos);
+    gl_Position = proj * view * vec4(fragPos, 1.0);
     fragColor = inColor;
-    fragNormal = inNormal;
+    fragNormal = normalize(fragPos);
 }

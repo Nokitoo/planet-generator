@@ -21,10 +21,12 @@ bool Application::init() {
         return false;
     }
 
-    _camera.setPos({0.0f, 30.0f, 30.0f});
+    float sphereRadius = 100.f;
+
+    _camera.setPos({sphereRadius / 2.0f, sphereRadius * 1.5f, sphereRadius * 1.5f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
     _camera.setFar(1000.0f);
-    _sphereQuadTree = std::make_unique<Core::SphereQuadTree>(100.0f, 4);
+    _sphereQuadTree = std::make_unique<Core::SphereQuadTree>(sphereRadius, 4);
 
     return true;
 }
