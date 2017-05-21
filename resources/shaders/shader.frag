@@ -6,7 +6,7 @@ layout (location = 2) in vec3 fragNormal;
 
 out vec4 outFragColor;
 
-uniform vec3 lightDir = vec3(0.0, -0.5, 0.5);
+uniform vec3 lightDir = vec3(0.0, -0.5, -0.5);
 
 vec3 getAmbient() {
     return fragColor * 0.2;
@@ -14,7 +14,7 @@ vec3 getAmbient() {
 
 vec3 getDiffuse() {
     vec3 normal = normalize(fragNormal);
-    float diff = max(dot(normalize(lightDir), normal), 0.0);
+    float diff = max(dot(normalize(-lightDir), normal), 0.0);
 
     return fragColor * diff;
 }
