@@ -24,7 +24,7 @@ public:
         const glm::vec3& pos,
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
-        const glm::vec3& color,
+        const glm::vec3& normal,
         uint32_t maxRecurse = 4);
     QuadTree() = delete;
     ~QuadTree() = default;
@@ -42,7 +42,7 @@ private:
         const glm::vec3& pos,
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
-        const glm::vec3& color);
+        const glm::vec3& normal);
 
 private:
     Children _children;

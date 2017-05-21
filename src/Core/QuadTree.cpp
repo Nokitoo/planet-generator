@@ -10,10 +10,10 @@ QuadTree::QuadTree(float size,
                     const glm::vec3& pos,
                     const glm::vec3& widthDir,
                     const glm::vec3& heightDir,
-                    const glm::vec3& color,
+                    const glm::vec3& normal,
                     uint32_t maxRecurse) {
     if (!maxRecurse) {
-        buildBuffer(size, pos, widthDir, heightDir, color);
+        buildBuffer(size, pos, widthDir, heightDir, normal);
         return;
     }
 
@@ -23,7 +23,7 @@ QuadTree::QuadTree(float size,
         pos + (heightDir * childrenSize),
         widthDir,
         heightDir,
-        glm::vec3(1.0f, 0.0f, 0.0f),
+        normal,
         maxRecurse - 1
         );
     _children._topRight = std::make_unique<QuadTree>(
@@ -31,7 +31,7 @@ QuadTree::QuadTree(float size,
         pos + (widthDir * childrenSize) + (heightDir * childrenSize),
         widthDir,
         heightDir,
-        glm::vec3(0.0f, 1.0f, 0.0f),
+        normal,
         maxRecurse - 1
         );
     _children._bottomLeft = std::make_unique<QuadTree>(
@@ -39,7 +39,7 @@ QuadTree::QuadTree(float size,
         pos,
         widthDir,
         heightDir,
-        glm::vec3(0.0f, 0.0f, 1.0f),
+        normal,
         maxRecurse - 1
         );
     _children._bottomRight = std::make_unique<QuadTree>(
@@ -47,7 +47,7 @@ QuadTree::QuadTree(float size,
         pos + (widthDir * childrenSize),
         widthDir,
         heightDir,
-        glm::vec3(1.0f, 1.0f, 0.0f),
+        normal,
         maxRecurse - 1
         );
 }
@@ -73,7 +73,7 @@ bool QuadTree::buildBuffer(float size,
     const glm::vec3& pos,
     const glm::vec3& widthDir,
     const glm::vec3& heightDir,
-    const glm::vec3& color) {
+    const glm::vec3& normal) {
     struct Vertex {
         glm::vec3 pos;
         glm::vec3 color;
@@ -86,10 +86,10 @@ bool QuadTree::buildBuffer(float size,
     glm::vec3 bottomRight = pos + (widthDir * size);
 
     Vertex vertices[] = {
-        { topLeft, color, {0.0f, 0.0f, 1.0f} },
-        { topRight, color, {0.0f, 0.0f, 1.0f} },
-        { bottomLeft, color, {0.0f, 0.0f, 1.0f} },
-        { bottomRight, color, {0.0f, 0.0f, 1.0f} }
+        { topLeft, glm::vec3(1.0f, 0.0f, 0.0f), normal },
+        { topRight, glm::vec3(0.0f, 1.0f, 0.0f), normal },
+        { bottomLeft, glm::vec3(0.0f, 0.0f, 1.0f), normal },
+        { bottomRight, glm::vec3(1.0f, 1.0f, 0.0f), normal }
     };
 
     uint32_t indices[] = {

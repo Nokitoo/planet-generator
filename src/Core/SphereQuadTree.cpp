@@ -8,7 +8,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(0.0f, 0.0f, -size), // Position
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
         maxRecurse // recurse
         );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
@@ -16,7 +16,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(size, 0.0f, 0.0f), // Position
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(1.0f, 0.0f, 0.0f), // Normal
         maxRecurse // recurse
         );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
@@ -24,7 +24,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(0.0f, 0.0f, 1.0f), // Normal
         maxRecurse // recurse
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
@@ -32,7 +32,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(size, 0.0f, -size), // Position
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(0.0f, 0.0f, -1.0f), // Normal
         maxRecurse // recurse
         );
     _topQuadTree = std::make_unique<Core::QuadTree>(
@@ -40,7 +40,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(0.0f, size, 0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(0.0f, 1.0f, 0.0f), // Normal
         maxRecurse // recurse
         );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
@@ -48,7 +48,7 @@ SphereQuadTree::SphereQuadTree(float size, uint32_t maxRecurse) {
         glm::vec3(0.0f, 0.0f, -size), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Color
+        glm::vec3(0.0f, -1.0f, 0.0f), // Normal
         maxRecurse // recurse
         );
 }
