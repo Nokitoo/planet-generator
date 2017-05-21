@@ -41,8 +41,11 @@ bool Application::run() {
                     event.key.code == Window::Keyboard::Key::Escape)) {
                 return true;
             }
-            else if (event.type == Window::Event::Type::MouseMoved) {
+            if (event.type == Window::Event::Type::MouseMoved) {
                 updateCameraRotation(event);
+            }
+            if (event.type == Window::Event::Type::KeyPressed) {
+                updateQuadTreeLevel(event);
             }
         }
 
@@ -56,12 +59,8 @@ bool Application::run() {
 }
 
 void Application::onFrame() {
-    static uint32_t i = 0;
-    if (i == 0) {
-        ++i;
-        for (auto& planet: _planets) {
-            planet->update();
-        }
+    for (auto& planet: _planets) {
+        planet->update(_quadTreeLevel);
     }
     updateCameraPosition();
 }
@@ -102,6 +101,15 @@ void Application::updateCameraRotation(Window::Event& event) {
                 0.0f
             }
         );
+}
+
+void Application::updateQuadTreeLevel(Window::Event& event) {
+    if (event.key.code == Window::Keyboard::Key::O && _quadTreeLevel < 10) {
+        ++_quadTreeLevel;
+    }
+    if (event.key.code == Window::Keyboard::Key::L && _quadTreeLevel > 1) {
+        --_quadTreeLevel;
+    }
 }
 
 } // Core

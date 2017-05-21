@@ -48,13 +48,6 @@ SphereQuadTree::SphereQuadTree(float size) {
         glm::vec3(0.0f, -1.0f, 0.0f) // Normal
         );
 
-    initQuadTree(_leftQuadTree.get(), 4);
-    initQuadTree(_rightQuadTree.get(), 4);
-    initQuadTree(_frontQuadTree.get(), 4);
-    initQuadTree(_backQuadTree.get(), 4);
-    initQuadTree(_topQuadTree.get(), 4);
-    initQuadTree(_bottomQuadTree.get(), 4);
-
     initBufferBuilder();
 }
 
@@ -108,16 +101,16 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
     return *this;
 }
 
-void SphereQuadTree::update() {
+void SphereQuadTree::update(uint32_t level) {
     std::vector<QuadTree::Vertex> vertices;
     std::vector<uint32_t> indices;
 
-    _leftQuadTree->update(vertices, indices);
-    _rightQuadTree->update(vertices, indices);
-    _frontQuadTree->update(vertices, indices);
-    _backQuadTree->update(vertices, indices);
-    _topQuadTree->update(vertices, indices);
-    _bottomQuadTree->update(vertices, indices);
+    _leftQuadTree->update(vertices, indices, level);
+    _rightQuadTree->update(vertices, indices, level);
+    _frontQuadTree->update(vertices, indices, level);
+    _backQuadTree->update(vertices, indices, level);
+    _topQuadTree->update(vertices, indices, level);
+    _bottomQuadTree->update(vertices, indices, level);
 
     _bufferBuilder.setVertices(
         (char*)vertices.data(),
@@ -170,18 +163,6 @@ void SphereQuadTree::initBufferBuilder() {
         sizeof(QuadTree::Vertex),
         offsetof(QuadTree::Vertex, normal)
     });
-}
-
-void SphereQuadTree::initQuadTree(QuadTree* quadTree, uint32_t maxRecurse) {
-    if (!maxRecurse) {
-        return;
-    }
-
-    quadTree->split();
-    initQuadTree(quadTree->_children.topLeft.get(), maxRecurse - 1);
-    initQuadTree(quadTree->_children.topRight.get(), maxRecurse - 1);
-    initQuadTree(quadTree->_children.bottomLeft.get(), maxRecurse - 1);
-    initQuadTree(quadTree->_children.bottomRight.get(), maxRecurse - 1);
 }
 
 } // Core

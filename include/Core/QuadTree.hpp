@@ -41,10 +41,11 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+    void update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, uint32_t level);
 
 private:
     void split();
+    void merge();
 
 private:
     Children _children;
@@ -56,6 +57,8 @@ private:
     glm::vec3 _normal;
 
     Vertex _corners[4];
+
+    bool _split = false;
 };
 
 } // Core

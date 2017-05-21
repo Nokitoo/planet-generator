@@ -26,7 +26,18 @@ QuadTree::QuadTree(float size,
     };
 }
 
-void QuadTree::update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
+void QuadTree::update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, uint32_t level) {
+    if (!level) {
+        if (_split) {
+            merge();
+        }
+        return;
+    }
+
+    if (!_split) {
+        split();
+    }
+
     uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
 
     vertices.push_back(_corners[0]);
@@ -41,18 +52,10 @@ void QuadTree::update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indi
     indices.push_back(verticesNb + 1);
     indices.push_back(verticesNb);
 
-    if (_children.topLeft) {
-        _children.topLeft->update(vertices, indices);
-    }
-    if (_children.topRight) {
-        _children.topRight->update(vertices, indices);
-    }
-    if (_children.bottomLeft) {
-        _children.bottomLeft->update(vertices, indices);
-    }
-    if (_children.bottomRight) {
-        _children.bottomRight->update(vertices, indices);
-    }
+    _children.topLeft->update(vertices, indices, level - 1);
+    _children.topRight->update(vertices, indices, level - 1);
+    _children.bottomLeft->update(vertices, indices, level - 1);
+    _children.bottomRight->update(vertices, indices, level - 1);
 }
 
 void QuadTree::split() {
@@ -85,6 +88,17 @@ void QuadTree::split() {
         _heightDir,
         _normal
         );
+
+    _split = true;
+}
+
+void QuadTree::merge() {
+    _children.topLeft = nullptr;
+    _children.topRight = nullptr;
+    _children.bottomLeft = nullptr;
+    _children.bottomRight = nullptr;
+
+    _split = false;
 }
 
 } // Core

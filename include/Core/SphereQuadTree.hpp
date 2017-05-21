@@ -20,13 +20,12 @@ public:
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    void update();
+    void update(uint32_t level);
 
     const Graphics::API::Buffer& getBuffer() const;
 
 private:
     void initBufferBuilder();
-    void initQuadTree(QuadTree* quadTree, uint32_t maxRecurse);
 
 private:
     std::unique_ptr<QuadTree> _leftQuadTree = nullptr;
