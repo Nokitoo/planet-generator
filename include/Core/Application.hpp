@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cstdint> // uint32_t
+#include <memory> // std::unique_ptr
+#include <vector> // std::vector
 
-#include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
+#include <Core/SphereQuadTree.hpp> // Core::SphereQuadTree
 #include <Graphics/Camera.hpp> // Graphics::Camera
 #include <Graphics/Renderer.hpp> // Graphics::Renderer
 #include <Window/Window.hpp> // Window::Window
@@ -24,7 +26,6 @@ public:
     bool run();
 
 private:
-    bool initCube();
     void onFrame();
 
     void updateCameraPosition();
@@ -34,8 +35,8 @@ private:
     std::unique_ptr<Window::Window> _window = nullptr;
     std::unique_ptr<Graphics::Renderer> _renderer = nullptr;
 
-    Graphics::API::Buffer _cubeBuffer;
-    uint32_t _cubeIndicesNb = 0;
+    std::unique_ptr<Core::SphereQuadTree> _sphereQuadTree;
+    std::vector<const Graphics::API::Buffer*> _buffers;
 
     Graphics::Camera _camera;
 };

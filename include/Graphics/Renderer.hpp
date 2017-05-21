@@ -22,7 +22,7 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(Camera& camera, const API::Buffer& buffer, uint32_t indicesNb);
+    void render(Camera& camera, const std::vector<const API::Buffer*>& buffers);
 
 private:
     // Only the Renderer::create can create the renderer

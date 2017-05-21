@@ -19,7 +19,7 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(Camera& camera, const API::Buffer& buffer, uint32_t indicesNb) {
+void Renderer::render(Camera& camera, const std::vector<const API::Buffer*>& buffers) {
     glUniformMatrix4fv(_viewUniformLocation,
         1,
         GL_FALSE,
@@ -29,13 +29,15 @@ void Renderer::render(Camera& camera, const API::Buffer& buffer, uint32_t indice
         GL_FALSE,
         glm::value_ptr(camera.getProj()));
 
-    buffer.bind();
-    glDrawElements(
-        GL_TRIANGLES,
-        (GLuint)indicesNb,
-        GL_UNSIGNED_INT,
-        0
-        );
+    for (const API::Buffer* buffer: buffers) {
+        buffer->bind();
+        glDrawElements(
+            GL_TRIANGLES,
+            (GLuint)6,
+            GL_UNSIGNED_INT,
+            0
+            );
+    }
 }
 
 bool Renderer::init() {
