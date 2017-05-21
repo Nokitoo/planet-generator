@@ -20,7 +20,7 @@ public:
     Application(Application&& app) = delete;
 
     Application& operator=(const Application& app) = delete;
-    Application&& operator=(Application&& app) = delete;
+    Application& operator=(Application&& app) = delete;
 
     bool init();
     bool run();

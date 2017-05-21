@@ -1,5 +1,7 @@
 #include <iostream> // std::cerr
 
+#include <System/Vector.hpp> // System::Vector
+
 #include <Core/SphereQuadTree.hpp> // Graphics::Core::SphereQuadTree
 
 namespace Core {
@@ -102,8 +104,8 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
 }
 
 void SphereQuadTree::update(uint32_t level) {
-    std::vector<QuadTree::Vertex> vertices;
-    std::vector<uint32_t> indices;
+    System::Vector<QuadTree::Vertex> vertices(500);
+    System::Vector<uint32_t> indices(500);
 
     _leftQuadTree->update(vertices, indices, level);
     _rightQuadTree->update(vertices, indices, level);

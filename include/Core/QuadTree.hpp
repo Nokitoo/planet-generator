@@ -4,6 +4,8 @@
 #include <memory> // unique_ptr
 #include <vector> // std::vector
 
+#include <System/Vector.hpp> // System::Vector
+
 #include <glm/vec3.hpp> // glm::vec3
 
 namespace Core {
@@ -41,7 +43,7 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, uint32_t level);
+    void update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, uint32_t level);
 
 private:
     void split();

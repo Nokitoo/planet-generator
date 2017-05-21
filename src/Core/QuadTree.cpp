@@ -26,7 +26,7 @@ QuadTree::QuadTree(float size,
     };
 }
 
-void QuadTree::update(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, uint32_t level) {
+void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, uint32_t level) {
     if (!level) {
         if (_split) {
             merge();
