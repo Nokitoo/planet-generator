@@ -169,9 +169,15 @@ float SphereQuadTree::getSize() const {
 }
 
 void SphereQuadTree::initLevelsDistance() {
-    uint32_t maxLevels = 8;
-    float distanceSteps = 50.0f;
+    uint32_t maxLevels = 5;
+    float distanceSteps = 20.0f;
     float distance = distanceSteps * maxLevels;
+
+    // We don't want the first 3 levels to be displayed
+    // It don't look like a sphere
+    _levelsTable.push_back(9999.0f);
+    _levelsTable.push_back(9999.0f);
+    _levelsTable.push_back(9999.0f);
 
     for (uint32_t i = 0; i < maxLevels; ++i) {
         _levelsTable.push_back(distance);

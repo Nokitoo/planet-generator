@@ -25,6 +25,7 @@ bool Application::init() {
 
     _camera.setPos({sphereSize / 2.0f, sphereSize * 1.5f, sphereSize * 1.5f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
+    _camera.setNear(2.0f);
     _camera.setFar(1000.0f);
     _planets.push_back(std::make_unique<Core::SphereQuadTree>(sphereSize));
 
