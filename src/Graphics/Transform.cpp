@@ -50,6 +50,10 @@ const glm::quat& Transform::getOrientation() const {
     return _orientation;
 }
 
+const glm::vec3& Transform::getDir() const {
+    return _dir;
+}
+
 bool Transform::isDirty() const {
     return _dirty;
 }
@@ -88,6 +92,8 @@ void Transform::lookAt(const glm::vec3& pos) {
     }
 
     _orientation = glm::normalize(glm::quat(realPart, w.x, w.y, w.z));
+    _dir = glm::normalize(_orientation * _forward);
+
     isDirty(true);
 }
 
@@ -101,6 +107,7 @@ void Transform::rotate(float amount, const glm::vec3& axis) {
     glm::quat yaw = glm::angleAxis(axis.y * amount, glm::vec3(0, 1, 0));
 
     _orientation = glm::normalize(pitch * _orientation * yaw);
+    _dir = glm::normalize(_orientation * _forward);
 
     isDirty(true);
 }

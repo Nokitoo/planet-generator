@@ -19,6 +19,7 @@ public:
 
     const glm::vec3& getPos() const;
     const glm::quat& getOrientation() const;
+    const glm::vec3& getDir() const;
     bool isDirty() const;
 
     void setPos(const glm::vec3& pos);
@@ -32,6 +33,8 @@ private:
     glm::vec3 _pos;
     glm::vec3 _forward = {0.0f, 0.0f, -1.0f};
     glm::quat _orientation;
+
+    glm::vec3 _dir;
 
     bool _dirty = true;
 };
