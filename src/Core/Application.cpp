@@ -44,9 +44,6 @@ bool Application::run() {
             if (event.type == Window::Event::Type::MouseMoved) {
                 updateCameraRotation(event);
             }
-            if (event.type == Window::Event::Type::KeyPressed) {
-                updateQuadTreeLevel(event);
-            }
         }
 
         _window->beginFrame();
@@ -60,7 +57,7 @@ bool Application::run() {
 
 void Application::onFrame() {
     for (auto& planet: _planets) {
-        planet->update(_camera, _quadTreeLevel);
+        planet->update(_camera);
     }
     updateCameraPosition();
 }
@@ -101,15 +98,6 @@ void Application::updateCameraRotation(Window::Event& event) {
                 0.0f
             }
         );
-}
-
-void Application::updateQuadTreeLevel(Window::Event& event) {
-    if (event.key.code == Window::Keyboard::Key::O && _quadTreeLevel < 10) {
-        ++_quadTreeLevel;
-    }
-    if (event.key.code == Window::Keyboard::Key::L && _quadTreeLevel > 1) {
-        --_quadTreeLevel;
-    }
 }
 
 } // Namespace Core

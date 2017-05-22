@@ -4,6 +4,7 @@
 #include <memory> // unique_ptr
 #include <vector> // std::vector
 
+#include <Graphics/Camera.hpp> // Graphics::Camera
 #include <System/Vector.hpp> // System::Vector
 
 #include <glm/vec3.hpp> // glm::vec3
@@ -12,6 +13,9 @@ namespace Core {
 
 class QuadTree {
     friend class SphereQuadTree;
+
+public:
+    using LevelsTable = std::vector<float>;
 
 private:
     // TODO: Move elsewhere
@@ -33,7 +37,9 @@ public:
         const glm::vec3& pos,
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
-        const glm::vec3& normal);
+        const glm::vec3& normal,
+        const LevelsTable& levelsTable,
+        uint32_t level);
     QuadTree() = delete;
     ~QuadTree() = default;
 
@@ -43,15 +49,18 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, uint32_t level);
+    void update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, const Graphics::Camera& camera);
 
 private:
+    bool needSplit(const Graphics::Camera& camera);
     void split();
+    bool needMerge(const Graphics::Camera& camera);
     void merge();
+
+    bool isInsideFrustrum(const Graphics::Camera& camera) const;
 
 private:
     Children _children;
-
     float _size;
     glm::vec3 _pos;
     glm::vec3 _widthDir;
@@ -60,6 +69,9 @@ private:
 
     Vertex _corners[4];
     glm::vec3 _center;
+
+    const LevelsTable& _levelsTable;
+    uint32_t _level = 0;
 
     bool _split = false;
 };

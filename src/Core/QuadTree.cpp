@@ -6,7 +6,10 @@ QuadTree::QuadTree(float size,
                     const glm::vec3& pos,
                     const glm::vec3& widthDir,
                     const glm::vec3& heightDir,
-                    const glm::vec3& normal): _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal) {
+                    const glm::vec3& normal,
+                    const LevelsTable& levelsTable,
+                     uint32_t level):
+    _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal), _levelsTable(levelsTable), _level(level) {
     glm::vec3 topLeft = pos + (heightDir * size);
     glm::vec3 topRight = pos + (widthDir * size) + (heightDir * size);
     glm::vec3 bottomLeft = pos;
@@ -28,36 +31,50 @@ QuadTree::QuadTree(float size,
     _center = bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f);
 }
 
-void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, uint32_t level) {
-    if (!level) {
+void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, const Graphics::Camera& camera) {
+    if (!isInsideFrustrum(camera)) {
         if (_split) {
             merge();
         }
         return;
     }
 
-    if (!_split) {
+    if (needSplit(camera)) {
         split();
     }
+    else if (needMerge(camera)) {
+        merge();
+    }
 
-    uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
+    if (_split) {
+        _children.topLeft->update(vertices, indices, camera);
+        _children.topRight->update(vertices, indices, camera);
+        _children.bottomLeft->update(vertices, indices, camera);
+        _children.bottomRight->update(vertices, indices, camera);
+    }
+    else {
+        uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
 
-    vertices.push_back(_corners[0]);
-    vertices.push_back(_corners[1]);
-    vertices.push_back(_corners[2]);
-    vertices.push_back(_corners[3]);
+        vertices.push_back(_corners[0]);
+        vertices.push_back(_corners[1]);
+        vertices.push_back(_corners[2]);
+        vertices.push_back(_corners[3]);
 
-    indices.push_back(verticesNb);
-    indices.push_back(verticesNb + 2);
-    indices.push_back(verticesNb + 3);
-    indices.push_back(verticesNb + 3);
-    indices.push_back(verticesNb + 1);
-    indices.push_back(verticesNb);
+        indices.push_back(verticesNb);
+        indices.push_back(verticesNb + 2);
+        indices.push_back(verticesNb + 3);
+        indices.push_back(verticesNb + 3);
+        indices.push_back(verticesNb + 1);
+        indices.push_back(verticesNb);
+    }
+}
 
-    _children.topLeft->update(vertices, indices, level - 1);
-    _children.topRight->update(vertices, indices, level - 1);
-    _children.bottomLeft->update(vertices, indices, level - 1);
-    _children.bottomRight->update(vertices, indices, level - 1);
+bool QuadTree::needSplit(const Graphics::Camera& camera) {
+    float distance = glm::distance(camera.getPos(), _center);
+
+    return !_split &&
+    _level < _levelsTable.size() &&
+    distance < _levelsTable[_level];
 }
 
 void QuadTree::split() {
@@ -67,31 +84,47 @@ void QuadTree::split() {
         _pos + (_heightDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal
+        _normal,
+        _levelsTable,
+        _level + 1
         );
     _children.topRight = std::make_unique<QuadTree>(
         childrenSize,
         _pos + (_widthDir * childrenSize) + (_heightDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal
+        _normal,
+        _levelsTable,
+        _level + 1
         );
     _children.bottomLeft = std::make_unique<QuadTree>(
         childrenSize,
         _pos,
         _widthDir,
         _heightDir,
-        _normal
+        _normal,
+        _levelsTable,
+        _level + 1
         );
     _children.bottomRight = std::make_unique<QuadTree>(
         childrenSize,
         _pos + (_widthDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal
+        _normal,
+        _levelsTable,
+        _level + 1
         );
 
     _split = true;
+}
+
+bool QuadTree::needMerge(const Graphics::Camera& camera) {
+    float distance = glm::distance(camera.getPos(), _center);
+
+    return _split &&
+    _level >= 0 &&
+    distance > _levelsTable[_level];
 }
 
 void QuadTree::merge() {
@@ -101,6 +134,10 @@ void QuadTree::merge() {
     _children.bottomRight = nullptr;
 
     _split = false;
+}
+
+bool QuadTree::isInsideFrustrum(const Graphics::Camera& camera) const {
+    return true;
 }
 
 } // Namespace Core

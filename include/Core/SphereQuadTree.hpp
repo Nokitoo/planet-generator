@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint> // uint32_t
-#include <memory> // unique_ptr
+#include <memory> // std::unique_ptr
+#include <vector> // std::vector
 
 #include <Core/QuadTree.hpp> // Core::QuadTree
 #include <Graphics/Camera.hpp> // Graphics::Camera
@@ -21,12 +22,13 @@ public:
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    void update(const Graphics::Camera& camera, uint32_t level);
+    void update(const Graphics::Camera& camera);
 
     const Graphics::API::Buffer& getBuffer() const;
     float getSize() const;
 
 private:
+    void initLevelsDistance();
     void initBufferBuilder();
     bool isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera);
 
@@ -41,6 +43,9 @@ private:
     Graphics::API::Builder::Buffer _bufferBuilder;
     Graphics::API::Buffer _buffer;
     float _size = 0;
+
+    // Store distance needed for each level
+    QuadTree::LevelsTable _levelsTable;
 };
 
 } // Namespace Core

@@ -12,44 +12,57 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 0.0f, -_size), // Position
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(-1.0f, 0.0f, 0.0f) // Normal
+        glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
+        _levelsTable,
+        0
         );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
         glm::vec3(_size, 0.0f, 0.0f), // Position
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f) // Normal
+        glm::vec3(1.0f, 0.0f, 0.0f), // Normal
+        _levelsTable,
+        0
         );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
         glm::vec3(0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(0.0f, 0.0f, 1.0f) // Normal
+        glm::vec3(0.0f, 0.0f, 1.0f), // Normal
+        _levelsTable,
+        0
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
         glm::vec3(_size, 0.0f, -_size), // Position
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(0.0f, 0.0f, -1.0f) // Normal
+        glm::vec3(0.0f, 0.0f, -1.0f), // Normal
+        _levelsTable,
+        0
         );
     _topQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
         glm::vec3(0.0f, _size, 0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
-        glm::vec3(0.0f, 1.0f, 0.0f) // Normal
+        glm::vec3(0.0f, 1.0f, 0.0f), // Normal
+        _levelsTable,
+        0
         );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
         glm::vec3(0.0f, 0.0f, -_size), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
-        glm::vec3(0.0f, -1.0f, 0.0f) // Normal
+        glm::vec3(0.0f, -1.0f, 0.0f), // Normal
+        _levelsTable,
+        0
         );
 
+    initLevelsDistance();
     initBufferBuilder();
 }
 
@@ -75,6 +88,7 @@ SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
 
     initBufferBuilder();
     _buffer = std::move(quadTree._buffer);
+    _levelsTable = quadTree._levelsTable;
 }
 
 SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
@@ -99,31 +113,32 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
 
     initBufferBuilder();
     _buffer = std::move(quadTree._buffer);
+    _levelsTable = quadTree._levelsTable;
 
     return *this;
 }
 
-void SphereQuadTree::update(const Graphics::Camera& camera, uint32_t level) {
+void SphereQuadTree::update(const Graphics::Camera& camera) {
     System::Vector<QuadTree::Vertex> vertices(500);
     System::Vector<uint32_t> indices(500);
 
     if (isFacingCamera(_leftQuadTree.get(), camera)) {
-        _leftQuadTree->update(vertices, indices, level);
+        _leftQuadTree->update(vertices, indices, camera);
     }
     if (isFacingCamera(_rightQuadTree.get(), camera)) {
-        _rightQuadTree->update(vertices, indices, level);
+        _rightQuadTree->update(vertices, indices, camera);
     }
     if (isFacingCamera(_frontQuadTree.get(), camera)) {
-        _frontQuadTree->update(vertices, indices, level);
+        _frontQuadTree->update(vertices, indices, camera);
     }
     if (isFacingCamera(_backQuadTree.get(), camera)) {
-        _backQuadTree->update(vertices, indices, level);
+        _backQuadTree->update(vertices, indices, camera);
     }
     if (isFacingCamera(_topQuadTree.get(), camera)) {
-        _topQuadTree->update(vertices, indices, level);
+        _topQuadTree->update(vertices, indices, camera);
     }
     if (isFacingCamera(_bottomQuadTree.get(), camera)) {
-        _bottomQuadTree->update(vertices, indices, level);
+        _bottomQuadTree->update(vertices, indices, camera);
     }
 
     _bufferBuilder.setVertices(
@@ -151,6 +166,17 @@ const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
 
 float SphereQuadTree::getSize() const {
     return (_size);
+}
+
+void SphereQuadTree::initLevelsDistance() {
+    uint32_t maxLevels = 8;
+    float distanceSteps = 50.0f;
+    float distance = distanceSteps * maxLevels;
+
+    for (uint32_t i = 0; i < maxLevels; ++i) {
+        _levelsTable.push_back(distance);
+        distance -= distanceSteps;
+    }
 }
 
 void SphereQuadTree::initBufferBuilder() {

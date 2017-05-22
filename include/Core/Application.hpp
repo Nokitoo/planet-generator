@@ -30,7 +30,6 @@ private:
 
     void updateCameraPosition();
     void updateCameraRotation(Window::Event& event);
-    void updateQuadTreeLevel(Window::Event& event);
 
 private:
     std::unique_ptr<Window::Window> _window = nullptr;
@@ -39,8 +38,6 @@ private:
     std::vector<std::unique_ptr<Core::SphereQuadTree>> _planets;
 
     Graphics::Camera _camera;
-
-    uint32_t _quadTreeLevel = 4;
 };
 
 } // Namespace Core
