@@ -37,6 +37,7 @@ private:
 
     GLuint _viewUniformLocation;
     GLuint _projUniformLocation;
+    GLuint _planetSizeUniformLocation;
 };
 
 } // Namespace Graphics

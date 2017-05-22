@@ -6,45 +6,45 @@
 
 namespace Core {
 
-SphereQuadTree::SphereQuadTree(float size) {
+SphereQuadTree::SphereQuadTree(float size): _size(size) {
     _leftQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
-        glm::vec3(0.0f, 0.0f, -size), // Position
+        _size, // Width
+        glm::vec3(0.0f, 0.0f, -_size), // Position
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(-1.0f, 0.0f, 0.0f) // Normal
         );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
-        glm::vec3(size, 0.0f, 0.0f), // Position
+        _size, // Width
+        glm::vec3(_size, 0.0f, 0.0f), // Position
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(1.0f, 0.0f, 0.0f) // Normal
         );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
+        _size, // Width
         glm::vec3(0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, 1.0f) // Normal
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
-        glm::vec3(size, 0.0f, -size), // Position
+        _size, // Width
+        glm::vec3(_size, 0.0f, -_size), // Position
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, -1.0f) // Normal
         );
     _topQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
-        glm::vec3(0.0f, size, 0.0f), // Position
+        _size, // Width
+        glm::vec3(0.0f, _size, 0.0f), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
         glm::vec3(0.0f, 1.0f, 0.0f) // Normal
         );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
-        size, // Width
-        glm::vec3(0.0f, 0.0f, -size), // Position
+        _size, // Width
+        glm::vec3(0.0f, 0.0f, -_size), // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
         glm::vec3(0.0f, -1.0f, 0.0f) // Normal
@@ -147,6 +147,10 @@ void SphereQuadTree::update(const Graphics::Camera& camera, uint32_t level) {
 
 const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
     return _buffer;
+}
+
+float SphereQuadTree::getSize() const {
+    return (_size);
 }
 
 void SphereQuadTree::initBufferBuilder() {

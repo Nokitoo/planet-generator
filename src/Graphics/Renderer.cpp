@@ -30,7 +30,9 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         glm::value_ptr(camera.getProj()));
 
     for (const auto& planet: planets) {
+        glUniform1f(_planetSizeUniformLocation, planet->getSize());
         planet->getBuffer().bind();
+
         glDrawElements(
             GL_TRIANGLES,
             (GLuint)planet->getBuffer().getIndicesNb(),
@@ -72,6 +74,7 @@ bool Renderer::initShaderProgram() {
 
     _viewUniformLocation = _shaderProgram.getUniformLocation("view");
     _projUniformLocation = _shaderProgram.getUniformLocation("proj");
+    _planetSizeUniformLocation = _shaderProgram.getUniformLocation("planetSize");
 
     return true;
 }

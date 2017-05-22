@@ -12,7 +12,7 @@ namespace Core {
 
 class SphereQuadTree {
 public:
-    SphereQuadTree(float radius);
+    SphereQuadTree(float size);
     ~SphereQuadTree() = default;
 
     SphereQuadTree(const SphereQuadTree& quadTree) = delete;
@@ -24,6 +24,7 @@ public:
     void update(const Graphics::Camera& camera, uint32_t level);
 
     const Graphics::API::Buffer& getBuffer() const;
+    float getSize() const;
 
 private:
     void initBufferBuilder();
@@ -39,6 +40,7 @@ private:
 
     Graphics::API::Builder::Buffer _bufferBuilder;
     Graphics::API::Buffer _buffer;
+    float _size = 0;
 };
 
 } // Namespace Core
