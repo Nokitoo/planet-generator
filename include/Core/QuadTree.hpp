@@ -59,6 +59,7 @@ private:
     glm::vec3 _normal;
 
     Vertex _corners[4];
+    glm::vec3 _center;
 
     bool _split = false;
 };

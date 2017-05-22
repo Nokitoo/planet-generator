@@ -103,16 +103,28 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
     return *this;
 }
 
-void SphereQuadTree::update(uint32_t level) {
+void SphereQuadTree::update(const Graphics::Camera& camera, uint32_t level) {
     System::Vector<QuadTree::Vertex> vertices(500);
     System::Vector<uint32_t> indices(500);
 
-    _leftQuadTree->update(vertices, indices, level);
-    _rightQuadTree->update(vertices, indices, level);
-    _frontQuadTree->update(vertices, indices, level);
-    _backQuadTree->update(vertices, indices, level);
-    _topQuadTree->update(vertices, indices, level);
-    _bottomQuadTree->update(vertices, indices, level);
+    if (isFacingCamera(_leftQuadTree.get(), camera)) {
+        _leftQuadTree->update(vertices, indices, level);
+    }
+    if (isFacingCamera(_rightQuadTree.get(), camera)) {
+        _rightQuadTree->update(vertices, indices, level);
+    }
+    if (isFacingCamera(_frontQuadTree.get(), camera)) {
+        _frontQuadTree->update(vertices, indices, level);
+    }
+    if (isFacingCamera(_backQuadTree.get(), camera)) {
+        _backQuadTree->update(vertices, indices, level);
+    }
+    if (isFacingCamera(_topQuadTree.get(), camera)) {
+        _topQuadTree->update(vertices, indices, level);
+    }
+    if (isFacingCamera(_bottomQuadTree.get(), camera)) {
+        _bottomQuadTree->update(vertices, indices, level);
+    }
 
     _bufferBuilder.setVertices(
         (char*)vertices.data(),
@@ -165,6 +177,11 @@ void SphereQuadTree::initBufferBuilder() {
         sizeof(QuadTree::Vertex),
         offsetof(QuadTree::Vertex, normal)
     });
+}
+
+bool SphereQuadTree::isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera) {
+    glm::vec3 cameraDir = glm::normalize(quadTree->_center - camera.getPos());
+    return glm::dot(-cameraDir, quadTree->_normal) > -0.7f;
 }
 
 } // Namespace Core

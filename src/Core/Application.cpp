@@ -60,7 +60,7 @@ bool Application::run() {
 
 void Application::onFrame() {
     for (auto& planet: _planets) {
-        planet->update(_quadTreeLevel);
+        planet->update(_camera, _quadTreeLevel);
     }
     updateCameraPosition();
 }

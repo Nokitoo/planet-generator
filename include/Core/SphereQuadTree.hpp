@@ -4,6 +4,7 @@
 #include <memory> // unique_ptr
 
 #include <Core/QuadTree.hpp> // Core::QuadTree
+#include <Graphics/Camera.hpp> // Graphics::Camera
 #include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
 #include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 
@@ -20,12 +21,13 @@ public:
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    void update(uint32_t level);
+    void update(const Graphics::Camera& camera, uint32_t level);
 
     const Graphics::API::Buffer& getBuffer() const;
 
 private:
     void initBufferBuilder();
+    bool isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera);
 
 private:
     std::unique_ptr<QuadTree> _leftQuadTree = nullptr;

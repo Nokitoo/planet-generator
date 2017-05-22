@@ -24,6 +24,8 @@ QuadTree::QuadTree(float size,
     _corners[3] = {
         bottomRight, glm::vec3(1.0f, 1.0f, 0.0f), _normal
     };
+
+    _center = bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f);
 }
 
 void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, uint32_t level) {
