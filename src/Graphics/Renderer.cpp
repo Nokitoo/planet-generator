@@ -19,7 +19,7 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool wireframe) {
     glUniformMatrix4fv(_viewUniformLocation,
         1,
         GL_FALSE,
@@ -34,7 +34,6 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         planet->getBuffer().bind();
         planet->getHeightMap().bind();
 
-        glUniform1i(_wireFrameUniformLocation, 0);
         glDrawElements(
             GL_TRIANGLES,
             (GLuint)planet->getBuffer().getIndicesNb(),
@@ -42,13 +41,16 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
             0
             );
 
-        glUniform1i(_wireFrameUniformLocation, 1);
-        glDrawElements(
-            GL_LINES,
-            (GLuint)planet->getBuffer().getIndicesNb(),
-            GL_UNSIGNED_INT,
-            0
-            );
+        if (wireframe) {
+            glUniform1i(_wireFrameUniformLocation, 1);
+            glDrawElements(
+                GL_LINES,
+                (GLuint)planet->getBuffer().getIndicesNb(),
+                GL_UNSIGNED_INT,
+                0
+                );
+            glUniform1i(_wireFrameUniformLocation, 0);
+        }
     }
 }
 

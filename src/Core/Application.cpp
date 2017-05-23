@@ -45,11 +45,15 @@ bool Application::run() {
             if (event.type == Window::Event::Type::MouseMoved) {
                 updateCameraRotation(event);
             }
+            else if (event.type == Window::Event::Type::KeyPressed &&
+                event.key.code == Window::Keyboard::Key::M) {
+                _wireframe = !_wireframe;
+            }
         }
 
         _window->beginFrame();
         onFrame();
-        _renderer->render(_camera, _planets);
+        _renderer->render(_camera, _planets, _wireframe);
         _window->endFrame();
     }
 

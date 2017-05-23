@@ -22,7 +22,7 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
+    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool wireframe = true);
 
 private:
     // Only the Renderer::create can create the renderer
