@@ -34,8 +34,17 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         planet->getBuffer().bind();
         planet->getHeightMap().bind();
 
+        glUniform1i(_wireFrameUniformLocation, 0);
         glDrawElements(
             GL_TRIANGLES,
+            (GLuint)planet->getBuffer().getIndicesNb(),
+            GL_UNSIGNED_INT,
+            0
+            );
+
+        glUniform1i(_wireFrameUniformLocation, 1);
+        glDrawElements(
+            GL_LINES,
             (GLuint)planet->getBuffer().getIndicesNb(),
             GL_UNSIGNED_INT,
             0
@@ -76,6 +85,7 @@ bool Renderer::initShaderProgram() {
     _viewUniformLocation = _shaderProgram.getUniformLocation("view");
     _projUniformLocation = _shaderProgram.getUniformLocation("proj");
     _planetSizeUniformLocation = _shaderProgram.getUniformLocation("planetSize");
+    _wireFrameUniformLocation = _shaderProgram.getUniformLocation("wireframe");
 
     return true;
 }

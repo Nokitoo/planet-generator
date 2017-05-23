@@ -12,6 +12,10 @@ layout (location = 3) out vec3 cubeMapCoord;
 uniform mat4 view;
 uniform mat4 proj;
 uniform float planetSize;
+uniform samplerCube heightMap;
+uniform int wireframe;
+
+uniform float heightStrength = 6.0;
 
 // Formulas: http://mathproofs.blogspot.kr/2005/07/mapping-cube-to-sphere.html
 vec3 mapCubeToSphere(vec3 pos)
@@ -24,9 +28,18 @@ vec3 mapCubeToSphere(vec3 pos)
     pos.y = pos.y * sqrt(1.0 - (z2 * 0.5) - (x2 * 0.5) + ((z2 * x2) / 3.0));
     pos.z = pos.z * sqrt(1.0 - (x2 * 0.5) - (y2 * 0.5) + ((x2 * y2) / 3.0));
 
-    // Convert from range [-1.0, 1.0] to range [0.0, planetSize]
-    pos = (pos / 2.0 + 0.5) * planetSize;
     return pos;
+}
+
+float getHeight() {
+    vec4 heightMapValue = texture(heightMap, cubeMapCoord);
+    float height = heightMapValue.r + heightMapValue.g + heightMapValue.b;
+
+    if (wireframe == 1) {
+        return (height * heightStrength) + 0.05;
+    }
+
+    return height * heightStrength;
 }
 
 void main()
@@ -34,12 +47,18 @@ void main()
     fragPos = inPosition;
 
     // Convert position to range [-1.0, 1.0]
-    fragPos = (fragPos + (planetSize / 2.0)) / planetSize * 2.0 - 1.0;
+    cubeMapCoord = (fragPos + (planetSize / 2.0)) / planetSize * 2.0 - 1.0;
 
-    cubeMapCoord = normalize(fragPos);
+    // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
+    // and scale [-1.0, 1.0] position to planet scale
+    fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
 
-    fragPos = mapCubeToSphere(fragPos);
+    // TODO: normal don't take into account height (How to calculate ?)
+    fragNormal = normalize(fragPos);
+
+    // Add height to frag position
+    fragPos += (fragNormal * getHeight());
+
     gl_Position = proj * view * vec4(fragPos, 1.0);
     fragColor = inColor;
-    fragNormal = normalize(fragPos);
 }

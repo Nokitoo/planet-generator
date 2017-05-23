@@ -38,6 +38,7 @@ private:
     GLuint _viewUniformLocation;
     GLuint _projUniformLocation;
     GLuint _planetSizeUniformLocation;
+    GLuint _wireFrameUniformLocation;
 };
 
 } // Namespace Graphics

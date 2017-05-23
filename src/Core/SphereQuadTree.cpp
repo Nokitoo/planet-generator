@@ -188,12 +188,12 @@ bool SphereQuadTree::initHeightMap() {
     textureBuilder.setType(GL_TEXTURE_CUBE_MAP);
     textureBuilder.setFormat(GL_RGB);
     textureBuilder.setInternalFormat(GL_RGB);
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/right.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/left.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/top.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/bottom.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/back.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/front.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/brush.jpg");
     textureBuilder.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
