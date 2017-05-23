@@ -32,6 +32,7 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
     for (const auto& planet: planets) {
         glUniform1f(_planetSizeUniformLocation, planet->getSize());
         planet->getBuffer().bind();
+        planet->getHeightMap().bind();
 
         glDrawElements(
             GL_TRIANGLES,

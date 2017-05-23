@@ -1,5 +1,3 @@
-#include <iostream> // std::cerr
-
 #include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 
 namespace Graphics {

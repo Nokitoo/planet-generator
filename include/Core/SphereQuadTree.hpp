@@ -8,6 +8,7 @@
 #include <Graphics/Camera.hpp> // Graphics::Camera
 #include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
 #include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
+#include <Graphics/API/Texture.hpp> // Graphics::API::Texture
 
 namespace Core {
 
@@ -26,8 +27,10 @@ public:
 
     const Graphics::API::Buffer& getBuffer() const;
     float getSize() const;
+    const Graphics::API::Texture& getHeightMap() const;
 
 private:
+    bool initHeightMap();
     void initLevelsDistance();
     void initBufferBuilder();
     bool isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera);
@@ -46,6 +49,8 @@ private:
 
     // Store distance needed for each level
     QuadTree::LevelsTable _levelsTable;
+
+    Graphics::API::Texture _heightMap;
 };
 
 } // Namespace Core

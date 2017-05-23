@@ -1,5 +1,6 @@
 #include <iostream> // std::cerr
 
+#include <Graphics/API/Builder/Texture.hpp> // Graphics::API::Builder::Texture
 #include <System/Vector.hpp> // System::Vector
 
 #include <Core/SphereQuadTree.hpp> // Graphics::Core::SphereQuadTree
@@ -7,9 +8,16 @@
 namespace Core {
 
 SphereQuadTree::SphereQuadTree(float size): _size(size) {
+    // Center cube
+    glm::vec3 baseOffset = {
+        -_size / 2.0f,
+        -_size / 2.0f,
+        _size / 2.0f
+    };
+
     _leftQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(0.0f, 0.0f, -_size), // Position
+        glm::vec3(0.0f, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
@@ -18,7 +26,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(_size, 0.0f, 0.0f), // Position
+        glm::vec3(_size, 0.0f, 0.0f) + baseOffset, // Position
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(1.0f, 0.0f, 0.0f), // Normal
@@ -27,7 +35,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(0.0f), // Position
+        glm::vec3(0.0f) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Normal
@@ -36,7 +44,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(_size, 0.0f, -_size), // Position
+        glm::vec3(_size, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Normal
@@ -45,7 +53,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         );
     _topQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(0.0f, _size, 0.0f), // Position
+        glm::vec3(0.0f, _size, 0.0f) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Normal
@@ -54,7 +62,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
-        glm::vec3(0.0f, 0.0f, -_size), // Position
+        glm::vec3(0.0f, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
         glm::vec3(0.0f, -1.0f, 0.0f), // Normal
@@ -62,6 +70,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         0
         );
 
+    initHeightMap();
     initLevelsDistance();
     initBufferBuilder();
 }
@@ -153,7 +162,8 @@ void SphereQuadTree::update(const Graphics::Camera& camera) {
     Graphics::API::Buffer buffer;
     if (!_bufferBuilder.build(buffer)) {
         // TODO: replace this with logger
-        std::cerr << "QuadTree::buildBuffer::init: failed to create renderer" << std::endl;
+        std::cerr << "SphereQuadTree::update: failed to create VAO" << std::endl;
+        // TODO return bool
         return;
     }
 
@@ -168,9 +178,39 @@ float SphereQuadTree::getSize() const {
     return (_size);
 }
 
+const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
+    return _heightMap;
+}
+
+bool SphereQuadTree::initHeightMap() {
+    Graphics::API::Builder::Texture textureBuilder;
+
+    textureBuilder.setType(GL_TEXTURE_CUBE_MAP);
+    textureBuilder.setFormat(GL_RGB);
+    textureBuilder.setInternalFormat(GL_RGB);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/right.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/left.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/top.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/bottom.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/back.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/front.jpg");
+    textureBuilder.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    textureBuilder.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    if (!textureBuilder.build(_heightMap)) {
+        // TODO: replace this with logger
+        std::cerr << "SphereQuadTree::initHeightMap: failed to create height map texture" << std::endl;
+        return false;
+    }
+    return true;
+}
+
 void SphereQuadTree::initLevelsDistance() {
     uint32_t maxLevels = 5;
-    float distanceSteps = 20.0f;
+    float distanceSteps = _size / 2.0f;
     float distance = distanceSteps * maxLevels;
 
     // We don't want the first 3 levels to be displayed
@@ -217,7 +257,7 @@ void SphereQuadTree::initBufferBuilder() {
 
 bool SphereQuadTree::isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera) {
     glm::vec3 cameraDir = glm::normalize(quadTree->_center - camera.getPos());
-    return glm::dot(-cameraDir, quadTree->_normal) > -0.7f;
+    return glm::dot(-cameraDir, quadTree->_normal) > -0.75f;
 }
 
 } // Namespace Core
