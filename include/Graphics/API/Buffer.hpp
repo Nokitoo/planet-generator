@@ -28,6 +28,11 @@ public:
     uint32_t getVerticesNb() const;
     uint32_t getIndicesNb() const;
 
+    void updateVertices(char* data, uint32_t size, uint32_t verticesNb, GLenum usage);
+    void updateIndices(char* data, uint32_t size, uint32_t indicesNb, GLenum usage);
+
+    void destroy();
+
 private:
     // Vertex array buffer
     GLuint _VAO = 0;
@@ -38,7 +43,10 @@ private:
     // Index buffer
     GLuint _EBO = 0;
 
+    uint32_t _verticesSize = 0;
     uint32_t _verticesNb = 0;
+
+    uint32_t _indicesSize = 0;
     uint32_t _indicesNb = 0;
 };
 

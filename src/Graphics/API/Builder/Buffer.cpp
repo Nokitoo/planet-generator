@@ -14,7 +14,9 @@ Buffer::~Buffer() {
     }
 }
 
-bool Buffer::build(API::Buffer& buffer) {
+bool Buffer::build(API::Buffer& returnBuffer) {
+    API::Buffer buffer;
+
     glGenVertexArrays(1, &buffer._VAO);
     glGenBuffers(1, &buffer._VBO);
     glGenBuffers(1, &buffer._EBO);
@@ -23,11 +25,11 @@ bool Buffer::build(API::Buffer& buffer) {
 
     // Update vertices buffer
     glBindBuffer(GL_ARRAY_BUFFER, buffer._VBO);
-    glBufferData(GL_ARRAY_BUFFER, _verticesSize, _verticesData, GL_STATIC_DRAW);
+    buffer.updateVertices(_verticesData, _verticesSize, _verticesNb, _verticesUsage);
 
     // Update indices buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer._EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indicesSize, _indicesData, GL_STATIC_DRAW);
+    buffer.updateIndices(_indicesData, _indicesSize, _indicesNb, _indicesUsage);
 
     // Configure buffer attribute
     for (const auto& attribute: _attributes) {
@@ -43,11 +45,8 @@ bool Buffer::build(API::Buffer& buffer) {
     }
 
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    buffer._verticesNb = _verticesSize > 0 && _verticesData != nullptr ? _verticesSize / sizeof(_verticesData[0]) : 0;
-    buffer._indicesNb = _indicesSize > 0 && _indicesData != nullptr ? _indicesSize / sizeof(_indicesData[0]) : 0;
+    returnBuffer = std::move(buffer);
 
     return true;
 }
@@ -56,28 +55,37 @@ void Buffer::addAttribute(const Attribute& attribute) {
     _attributes.push_back(attribute);
 }
 
-void Buffer::setVertices(const char* data, uint32_t size) {
+void Buffer::setVertices(const char* data, uint32_t size, uint32_t verticesNb) {
     if (_verticesData) {
         delete[] _verticesData;
     }
 
     _verticesSize = size;
+    _verticesNb = verticesNb;
     _verticesData = new char[_verticesSize];
 
     std::memcpy(_verticesData, data, _verticesSize);
 }
 
-void Buffer::setIndices(const char* data, uint32_t size) {
+void Buffer::setIndices(const char* data, uint32_t size, uint32_t indicesNb) {
     if (_indicesData) {
         delete[] _indicesData;
     }
 
     _indicesSize = size;
+    _indicesNb = indicesNb;
     _indicesData = new char[_indicesSize];
 
     std::memcpy(_indicesData, data, _indicesSize);
 }
 
+void Buffer::setVerticesUsage(GLenum usage) {
+    _verticesUsage = usage;
+}
+
+void Buffer::setIndicesUsage(GLenum usage) {
+    _indicesUsage = usage;
+}
 
 } // Namespace Builder
 } // Namespace API

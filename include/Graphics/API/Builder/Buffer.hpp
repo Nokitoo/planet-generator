@@ -30,22 +30,27 @@ public:
     Buffer& operator=(const Buffer& buffer) = delete;
     Buffer& operator=(Buffer&& buffer) = delete;
 
-    bool build(API::Buffer& buffer);
+    bool build(API::Buffer& returnBuffer);
 
     void addAttribute(const Attribute& attribute);
-    void setVertices(const char* data, uint32_t size);
-    void setIndices(const char* data, uint32_t size);
+    void setVertices(const char* data, uint32_t size, uint32_t verticesNb);
+    void setIndices(const char* data, uint32_t size, uint32_t indicesNb);
+    void setVerticesUsage(GLenum usage);
+    void setIndicesUsage(GLenum usage);
 
 private:
     std::vector<Attribute> _attributes;
 
-    char* _verticesData = nullptr;
     uint32_t _verticesSize = 0;
     uint32_t _verticesNb = 0;
+    char* _verticesData = nullptr;
 
-    char* _indicesData = nullptr;
     uint32_t _indicesSize = 0;
     uint32_t _indicesNb = 0;
+    char* _indicesData = nullptr;
+
+    GLenum _verticesUsage = GL_STATIC_DRAW;
+    GLenum _indicesUsage = GL_STATIC_DRAW;
 };
 
 } // Namespace Builder

@@ -50,15 +50,15 @@ void main()
 
     // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
     // and scale [-1.0, 1.0] position to planet scale
-    //fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
-    fragPos = cubeMapCoord * planetSize;
+    fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
+    //fragPos = cubeMapCoord * planetSize;
 
     // TODO: normal don't take into account height (How to calculate ?)
     fragNormal = normalize(fragPos);
     fragQuadTreelevel = inQuadTreelevel;
 
     // Add height to frag position
-    //fragPos += (fragNormal * getHeight());
+    fragPos += (fragNormal * getHeight());
 
     gl_Position = proj * view * vec4(fragPos, 1.0);
 }

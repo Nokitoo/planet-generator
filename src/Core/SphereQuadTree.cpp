@@ -138,7 +138,6 @@ SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
         _bottomQuadTree = std::move(quadTree._bottomQuadTree);
     }
 
-    initBufferBuilder();
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
 }
@@ -163,7 +162,6 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
         _bottomQuadTree = std::move(quadTree._bottomQuadTree);
     }
 
-    initBufferBuilder();
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
 
@@ -193,24 +191,18 @@ void SphereQuadTree::update(const Graphics::Camera& camera) {
         _bottomQuadTree->update(vertices, indices, camera);
     }
 
-    _bufferBuilder.setVertices(
+    _buffer.updateVertices(
         (char*)vertices.data(),
-        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex)
+        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex),
+        static_cast<uint32_t>(vertices.size()),
+        GL_DYNAMIC_DRAW
         );
-    _bufferBuilder.setIndices(
+    _buffer.updateIndices(
         (char*)indices.data(),
-        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t)
+        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
+        static_cast<uint32_t>(indices.size()),
+        GL_DYNAMIC_DRAW
         );
-
-    Graphics::API::Buffer buffer;
-    if (!_bufferBuilder.build(buffer)) {
-        // TODO: replace this with logger
-        std::cerr << "SphereQuadTree::update: failed to create VAO" << std::endl;
-        // TODO return bool
-        return;
-    }
-
-    _buffer = std::move(buffer);
 }
 
 const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
@@ -287,6 +279,16 @@ void SphereQuadTree::initBufferBuilder() {
         sizeof(QuadTree::Vertex),
         offsetof(QuadTree::Vertex, quadTreeLevel)
     });
+
+    _bufferBuilder.setVerticesUsage(GL_DYNAMIC_DRAW);
+    _bufferBuilder.setIndicesUsage(GL_DYNAMIC_DRAW);
+
+    if (!_bufferBuilder.build(_buffer)) {
+        // TODO: replace this with logger
+        std::cerr << "SphereQuadTree::initBufferBuilder: failed to create VAO" << std::endl;
+        // TODO return bool
+        return;
+    }
 }
 
 bool SphereQuadTree::isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera) {

@@ -33,7 +33,6 @@ void main()
         outFragColor = vec4(0.0);
     }
     else {
-        //outFragColor = vec4(ambient + diffuse, 1.0);
-        outFragColor = vec4(color, 1.0);
+        outFragColor = vec4(ambient + diffuse, 1.0);
     }
 }

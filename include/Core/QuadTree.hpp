@@ -97,6 +97,8 @@ public:
     void setNeighbor(Face fromFace, NeighborOrientation neighborOrientation, QuadTree* neighbor);
 
 private:
+    void addChildrenVertices(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices);
+
     bool needSplit(const Graphics::Camera& camera);
     void split();
     bool needMerge(const Graphics::Camera& camera);
