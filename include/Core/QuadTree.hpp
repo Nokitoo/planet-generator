@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint> // uint32_t
+#include <cstdint> // uint32_t, uint8_t
 #include <memory> // unique_ptr
 #include <vector> // std::vector
 
@@ -17,19 +17,54 @@ class QuadTree {
 public:
     using LevelsTable = std::vector<float>;
 
-private:
     // TODO: Move elsewhere
     struct Vertex {
         glm::vec3 pos;
-        glm::vec3 color;
-        glm::vec3 normal;
+        float quadTreeLevel;
     };
 
+    // Enum order is important !
+    // It's used to rotate orientation:
+    // TL | TR          BL | TL
+    // -------  + 1 =>  -------
+    // BL | BR          BR | TR
+    enum class ChildOrientation: uint8_t {
+        TOP_LEFT = 0,
+        TOP_RIGHT = 1,
+        BOTTOM_RIGHT = 2,
+        BOTTOM_LEFT = 3
+    };
+
+    // Enum order is important, same as ChildOrientation
+    enum class NeighborOrientation: uint8_t {
+        TOP = 0,
+        RIGHT = 1,
+        BOTTOM = 2,
+        LEFT = 3
+    };
+
+    enum class Face: uint8_t {
+        LEFT = 0,
+        RIGHT = 1,
+        FRONT = 2,
+        BACK = 3,
+        TOP = 4,
+        BOTTOM = 5
+    };
+
+private:
     struct Children {
         std::unique_ptr<QuadTree> topLeft = nullptr;
         std::unique_ptr<QuadTree> topRight = nullptr;
         std::unique_ptr<QuadTree> bottomLeft = nullptr;
         std::unique_ptr<QuadTree> bottomRight = nullptr;
+    };
+
+    struct Neighbors {
+        QuadTree* top = nullptr;
+        QuadTree* left = nullptr;
+        QuadTree* right = nullptr;
+        QuadTree* bottom = nullptr;
     };
 
 public:
@@ -38,8 +73,10 @@ public:
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
         const glm::vec3& normal,
+        Face face,
         const LevelsTable& levelsTable,
-        uint32_t level);
+        uint32_t level,
+        QuadTree* parent = nullptr);
     QuadTree() = delete;
     ~QuadTree() = default;
 
@@ -50,6 +87,14 @@ public:
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
     void update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, const Graphics::Camera& camera);
+    void updateNeighBors();
+    void setNeighBors(QuadTree* top, QuadTree* left, QuadTree* right, QuadTree* bottom);
+
+    uint8_t getOrientationRotationFromFace(Face fromFace);
+    QuadTree* getChild(Face fromFace, ChildOrientation childOrientation);
+    QuadTree* getNeighbor(Face fromFace, NeighborOrientation neighborOrientation);
+
+    void setNeighbor(Face fromFace, NeighborOrientation neighborOrientation, QuadTree* neighbor);
 
 private:
     bool needSplit(const Graphics::Camera& camera);
@@ -61,6 +106,8 @@ private:
 
 private:
     Children _children;
+    Neighbors _neighbors;
+
     float _size;
     glm::vec3 _pos;
     glm::vec3 _widthDir;
@@ -69,12 +116,23 @@ private:
 
     Vertex _corners[4];
     glm::vec3 _center;
+    Face _face = Face::FRONT;
 
     const LevelsTable& _levelsTable;
     uint32_t _level = 0;
 
     bool _split = false;
+    QuadTree* _parent = nullptr;
 };
+
+inline QuadTree::ChildOrientation operator+(QuadTree::ChildOrientation a, uint8_t b) {
+    return static_cast<QuadTree::ChildOrientation>((static_cast<uint8_t>(a) + b) % 4);
+}
+
+inline QuadTree::NeighborOrientation operator+(QuadTree::NeighborOrientation a, uint8_t b) {
+    return static_cast<QuadTree::NeighborOrientation>((static_cast<uint8_t>(a) + b) % 4);
+}
+
 
 } // Namespace Core
 

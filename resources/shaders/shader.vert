@@ -1,11 +1,10 @@
 #version 420 core
 
 layout (location = 0) in vec3 inPosition;
-layout (location = 1) in vec3 inColor;
-layout (location = 2) in vec3 inNormal;
+layout (location = 1) in float inQuadTreelevel;
 
 layout (location = 0) out vec3 fragPos;
-layout (location = 1) out vec3 fragColor;
+layout (location = 1) out flat float fragQuadTreelevel;
 layout (location = 2) out vec3 fragNormal;
 layout (location = 3) out vec3 cubeMapCoord;
 
@@ -51,14 +50,15 @@ void main()
 
     // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
     // and scale [-1.0, 1.0] position to planet scale
-    fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
+    //fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
+    fragPos = cubeMapCoord * planetSize;
 
     // TODO: normal don't take into account height (How to calculate ?)
     fragNormal = normalize(fragPos);
+    fragQuadTreelevel = inQuadTreelevel;
 
     // Add height to frag position
-    fragPos += (fragNormal * getHeight());
+    //fragPos += (fragNormal * getHeight());
 
     gl_Position = proj * view * vec4(fragPos, 1.0);
-    fragColor = inColor;
 }

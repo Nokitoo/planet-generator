@@ -21,6 +21,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
+        QuadTree::Face::LEFT,
         _levelsTable,
         0
         );
@@ -30,6 +31,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(1.0f, 0.0f, 0.0f), // Normal
+        QuadTree::Face::RIGHT,
         _levelsTable,
         0
         );
@@ -39,6 +41,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Normal
+        QuadTree::Face::FRONT,
         _levelsTable,
         0
         );
@@ -48,6 +51,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Normal
+        QuadTree::Face::BACK,
         _levelsTable,
         0
         );
@@ -57,6 +61,7 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Normal
+        QuadTree::Face::TOP,
         _levelsTable,
         0
         );
@@ -66,8 +71,46 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
         glm::vec3(0.0f, -1.0f, 0.0f), // Normal
+        QuadTree::Face::BOTTOM,
         _levelsTable,
         0
+        );
+
+    _leftQuadTree->setNeighBors(
+        _topQuadTree.get(), // Top neightbor
+        _backQuadTree.get(), // Left neighbor
+        _frontQuadTree.get(), // Right neighbor
+        _bottomQuadTree.get() // Bottom neighbor
+        );
+    _rightQuadTree->setNeighBors(
+        _topQuadTree.get(), // Top neightbor
+        _frontQuadTree.get(), // Left neighbor
+        _backQuadTree.get(), // Right neighbor
+        _bottomQuadTree.get() // Bottom neighbor
+        );
+    _frontQuadTree->setNeighBors(
+        _topQuadTree.get(), // Top neightbor
+        _leftQuadTree.get(), // Left neighbor
+        _rightQuadTree.get(), // Right neighbor
+        _bottomQuadTree.get() // Bottom neighbor
+        );
+    _backQuadTree->setNeighBors(
+        _topQuadTree.get(), // Top neightbor
+        _rightQuadTree.get(), // Left neighbor
+        _leftQuadTree.get(), // Right neighbor
+        _bottomQuadTree.get() // Bottom neighbor
+        );
+    _topQuadTree->setNeighBors(
+        _backQuadTree.get(), // Top neightbor
+        _leftQuadTree.get(), // Left neighbor
+        _rightQuadTree.get(), // Right neighbor
+        _frontQuadTree.get() // Bottom neighbor
+        );
+    _bottomQuadTree->setNeighBors(
+        _frontQuadTree.get(), // Top neightbor
+        _leftQuadTree.get(), // Left neighbor
+        _rightQuadTree.get(), // Right neighbor
+        _backQuadTree.get() // Bottom neighbor
         );
 
     initHeightMap();
@@ -209,7 +252,7 @@ bool SphereQuadTree::initHeightMap() {
 }
 
 void SphereQuadTree::initLevelsDistance() {
-    uint32_t maxLevels = 5;
+    uint32_t maxLevels = 4;
     float distanceSteps = _size / 2.0f;
     float distance = distanceSteps * maxLevels;
 
@@ -235,23 +278,14 @@ void SphereQuadTree::initBufferBuilder() {
         sizeof(QuadTree::Vertex),
         offsetof(QuadTree::Vertex, pos)
     });
-    // Color attribute
+    // QuadTree level attribute
     _bufferBuilder.addAttribute({
         1,
-        3,
+        1,
         GL_FLOAT,
         GL_FALSE,
         sizeof(QuadTree::Vertex),
-        offsetof(QuadTree::Vertex, color)
-    });
-    // Normal attribute
-    _bufferBuilder.addAttribute({
-        2,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(QuadTree::Vertex),
-        offsetof(QuadTree::Vertex, normal)
+        offsetof(QuadTree::Vertex, quadTreeLevel)
     });
 }
 

@@ -44,7 +44,7 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         if (wireframe) {
             glUniform1i(_wireFrameUniformLocation, 1);
             glDrawElements(
-                GL_LINES,
+                GL_LINE_STRIP,
                 (GLuint)planet->getBuffer().getIndicesNb(),
                 GL_UNSIGNED_INT,
                 0

@@ -2,6 +2,7 @@
 
 #include <cstdint> // uint32_t
 #include <memory> // std::unique_ptr
+#include <unordered_map> // std::unordered_map
 #include <vector> // std::vector
 
 #include <Core/QuadTree.hpp> // Core::QuadTree
