@@ -34,7 +34,7 @@ QuadTree::QuadTree(float size,
     _center = bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f);
 }
 
-void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, const Graphics::Camera& camera) {
+void QuadTree::update(const Graphics::Camera& camera) {
     if (!isInsideFrustrum(camera)) {
         if (_split) {
             merge();
@@ -50,13 +50,11 @@ void QuadTree::update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>
     }
 
     if (_split) {
-        _children.topLeft->update(vertices, indices, camera);
-        _children.topRight->update(vertices, indices, camera);
-        _children.bottomLeft->update(vertices, indices, camera);
-        _children.bottomRight->update(vertices, indices, camera);
-        addChildrenVertices(vertices, indices);
+        _children.topLeft->update(camera);
+        _children.topRight->update(camera);
+        _children.bottomLeft->update(camera);
+        _children.bottomRight->update(camera);
     }
-
 }
 
 void QuadTree::updateNeighBors() {
@@ -293,152 +291,198 @@ void QuadTree::setNeighbor(Face fromFace, NeighborOrientation neighborOrientatio
 }
 
 void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices) {
-        uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
+    if (!_split) {
+        return;
+    }
 
-        /*
-         * A quadtree with children should look like this
-         * So we can remove adjacent vertices to prevent cracks
-         *                   ___ ___
-         *                  |\  |  /|
-         * TL (top left)    | \ | / | TR (top right)
-         *                  |__\|/__|
-         *                  |  /|\  |
-         * BL (bottom left) | / | \ | BR (bottom right)
-         *                  |/__|__\|
-         *
-         *
-        */
+    uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
+
+    /*
+     * A quadtree with children should look like this
+     * So we can remove adjacent vertices to prevent cracks
+     *                   ___ ___
+     *                  |\  |  /|
+     * TL (top left)    | \ | / | TR (top right)
+     *                  |__\|/__|
+     *                  |  /|\  |
+     * BL (bottom left) | / | \ | BR (bottom right)
+     *                  |/__|__\|
+     *
+     *
+    */
 
 
-        /*  ___
-         * |\  |
-         * | \ |    TL or BR
-         * |__\|
-         *
-        */
-         uint32_t TLIndex = verticesNb;
-         uint32_t BRIndex = verticesNb + 4;
-         uint32_t BLIndex = BRIndex + 4;
-         uint32_t TRIndex = BLIndex + 4;
-        {
-            // TL
-            vertices.push_back(_children.topLeft->_corners[0]);
-            vertices.push_back(_children.topLeft->_corners[1]);
-            vertices.push_back(_children.topLeft->_corners[2]);
-            vertices.push_back(_children.topLeft->_corners[3]);
-            if (!_children.topLeft->_split) {
-                if (_children.topLeft->_neighbors.left) {
-                    indices.push_back(TLIndex);
-                    indices.push_back(TLIndex + 2);
-                    indices.push_back(TLIndex + 3);
-                }
-
-                if (_children.topLeft->_neighbors.top) {
-                    indices.push_back(TLIndex);
-                    indices.push_back(TLIndex + 3);
-                    indices.push_back(TLIndex + 1);
-                }
-
-            }
-
-            // BR
-            vertices.push_back(_children.bottomRight->_corners[0]);
-            vertices.push_back(_children.bottomRight->_corners[1]);
-            vertices.push_back(_children.bottomRight->_corners[2]);
-            vertices.push_back(_children.bottomRight->_corners[3]);
-            if (!_children.bottomRight->_split) {
-                if (_children.bottomRight->_neighbors.bottom) {
-                    indices.push_back(BRIndex);
-                    indices.push_back(BRIndex + 2);
-                    indices.push_back(BRIndex + 3);
-                }
-                if (_children.bottomRight->_neighbors.right) {
-                    indices.push_back(BRIndex);
-                    indices.push_back(BRIndex + 3);
-                    indices.push_back(BRIndex + 1);
-                }
-            }
-        }
-
-        /*  ___
-         * |  /|
-         * | / |    BL or TR
-         * |/__|
-         *
-        */
-        {
-            // BL
-            vertices.push_back(_children.bottomLeft->_corners[0]);
-            vertices.push_back(_children.bottomLeft->_corners[1]);
-            vertices.push_back(_children.bottomLeft->_corners[2]);
-            vertices.push_back(_children.bottomLeft->_corners[3]);
-            if (!_children.bottomLeft->_split) {
-                if (_children.bottomLeft->_neighbors.left) {
-                    indices.push_back(BLIndex);
-                    indices.push_back(BLIndex + 2);
-                    indices.push_back(BLIndex + 1);
-                }
-                if (_children.bottomLeft->_neighbors.top) {
-                    indices.push_back(BLIndex + 1);
-                    indices.push_back(BLIndex + 2);
-                    indices.push_back(BLIndex + 3);
-                }
-            }
-
-            // TR
-            vertices.push_back(_children.topRight->_corners[0]);
-            vertices.push_back(_children.topRight->_corners[1]);
-            vertices.push_back(_children.topRight->_corners[2]);
-            vertices.push_back(_children.topRight->_corners[3]);
-            if (!_children.topRight->_split) {
-                if (_children.topRight->_neighbors.top) {
-                    indices.push_back(TRIndex);
-                    indices.push_back(TRIndex + 2);
-                    indices.push_back(TRIndex + 1);
-                }
-                if (_children.topRight->_neighbors.right) {
-                    indices.push_back(TRIndex + 1);
-                    indices.push_back(TRIndex + 2);
-                    indices.push_back(TRIndex + 3);
-                }
-            }
-        }
-
-        // Fill gaps caused by removed vertices
-        {
-            if (!_children.topLeft->_split &&
-                !_children.topRight->_split &&
-                !_children.topLeft->_neighbors.top &&
-                !_children.topRight->_neighbors.top) {
+    /*  ___
+     * |\  |
+     * | \ |    TL or BR
+     * |__\|
+     *
+    */
+     uint32_t TLIndex = verticesNb;
+     uint32_t BRIndex = verticesNb + 4;
+     uint32_t BLIndex = BRIndex + 4;
+     uint32_t TRIndex = BLIndex + 4;
+    {
+        // TL
+        vertices.push_back(_children.topLeft->_corners[0]);
+        vertices.push_back(_children.topLeft->_corners[1]);
+        vertices.push_back(_children.topLeft->_corners[2]);
+        vertices.push_back(_children.topLeft->_corners[3]);
+        if (!_children.topLeft->_split) {
+            if (_children.topLeft->_neighbors.left) {
                 indices.push_back(TLIndex);
-                indices.push_back(TLIndex + 3);
-                indices.push_back(TRIndex + 1);
-            }
-            if (!_children.topLeft->_split &&
-                !_children.bottomLeft->_split &&
-                !_children.topLeft->_neighbors.left &&
-                !_children.bottomLeft->_neighbors.left) {
-                indices.push_back(TLIndex);
-                indices.push_back(BLIndex + 2);
+                indices.push_back(TLIndex + 2);
                 indices.push_back(TLIndex + 3);
             }
-            if (!_children.topRight->_split &&
-                !_children.bottomRight->_split &&
-                !_children.topRight->_neighbors.right &&
-                !_children.bottomRight->_neighbors.right) {
-                indices.push_back(TRIndex + 1);
-                indices.push_back(TRIndex + 2);
+
+            if (_children.topLeft->_neighbors.top) {
+                indices.push_back(TLIndex);
+                indices.push_back(TLIndex + 3);
+                indices.push_back(TLIndex + 1);
+            }
+
+        }
+
+        // BR
+        vertices.push_back(_children.bottomRight->_corners[0]);
+        vertices.push_back(_children.bottomRight->_corners[1]);
+        vertices.push_back(_children.bottomRight->_corners[2]);
+        vertices.push_back(_children.bottomRight->_corners[3]);
+        if (!_children.bottomRight->_split) {
+            if (_children.bottomRight->_neighbors.bottom) {
+                indices.push_back(BRIndex);
+                indices.push_back(BRIndex + 2);
                 indices.push_back(BRIndex + 3);
             }
-            if (!_children.bottomLeft->_split &&
-                !_children.bottomRight->_split &&
-                !_children.bottomLeft->_neighbors.bottom &&
-                !_children.bottomRight->_neighbors.bottom) {
+            if (_children.bottomRight->_neighbors.right) {
+                indices.push_back(BRIndex);
+                indices.push_back(BRIndex + 3);
+                indices.push_back(BRIndex + 1);
+            }
+        }
+    }
+
+    /*  ___
+     * |  /|
+     * | / |    BL or TR
+     * |/__|
+     *
+    */
+    {
+        // BL
+        vertices.push_back(_children.bottomLeft->_corners[0]);
+        vertices.push_back(_children.bottomLeft->_corners[1]);
+        vertices.push_back(_children.bottomLeft->_corners[2]);
+        vertices.push_back(_children.bottomLeft->_corners[3]);
+        if (!_children.bottomLeft->_split) {
+            if (_children.bottomLeft->_neighbors.left) {
+                indices.push_back(BLIndex);
+                indices.push_back(BLIndex + 2);
+                indices.push_back(BLIndex + 1);
+            }
+            if (_children.bottomLeft->_neighbors.top) {
                 indices.push_back(BLIndex + 1);
                 indices.push_back(BLIndex + 2);
-                indices.push_back(BRIndex + 3);
+                indices.push_back(BLIndex + 3);
             }
         }
+
+        // TR
+        vertices.push_back(_children.topRight->_corners[0]);
+        vertices.push_back(_children.topRight->_corners[1]);
+        vertices.push_back(_children.topRight->_corners[2]);
+        vertices.push_back(_children.topRight->_corners[3]);
+        if (!_children.topRight->_split) {
+            if (_children.topRight->_neighbors.top) {
+                indices.push_back(TRIndex);
+                indices.push_back(TRIndex + 2);
+                indices.push_back(TRIndex + 1);
+            }
+            if (_children.topRight->_neighbors.right) {
+                indices.push_back(TRIndex + 1);
+                indices.push_back(TRIndex + 2);
+                indices.push_back(TRIndex + 3);
+            }
+        }
+    }
+
+    // Fill gaps caused by removed vertices
+    {
+        /*
+         *    Top triangle
+         *      ___ ___
+         *      \     /
+         *       \   /
+         *        \ /
+        */
+        if (!_children.topLeft->_split &&
+            !_children.topRight->_split &&
+            !_children.topLeft->_neighbors.top &&
+            !_children.topRight->_neighbors.top) {
+            indices.push_back(TLIndex);
+            indices.push_back(TLIndex + 3);
+            indices.push_back(TRIndex + 1);
+        }
+
+        /*
+         *  Left triangle
+         *
+         *      |\
+         *      | \
+         *      |  \
+         *      |  /
+         *      | /
+         *      |/
+        */
+        if (!_children.topLeft->_split &&
+            !_children.bottomLeft->_split &&
+            !_children.topLeft->_neighbors.left &&
+            !_children.bottomLeft->_neighbors.left) {
+            indices.push_back(TLIndex);
+            indices.push_back(BLIndex + 2);
+            indices.push_back(TLIndex + 3);
+        }
+
+        /*
+         *  Right triangle
+         *
+         *        /|
+         *       / |
+         *      /  |
+         *      \  |
+         *       \ |
+         *        \|
+        */
+        if (!_children.topRight->_split &&
+            !_children.bottomRight->_split &&
+            !_children.topRight->_neighbors.right &&
+            !_children.bottomRight->_neighbors.right) {
+            indices.push_back(TRIndex + 1);
+            indices.push_back(TRIndex + 2);
+            indices.push_back(BRIndex + 3);
+        }
+
+        /*
+         *   Bottom triangle
+         *
+         *        / \
+         *       /   \
+         *      /__ __\
+        */
+        if (!_children.bottomLeft->_split &&
+            !_children.bottomRight->_split &&
+            !_children.bottomLeft->_neighbors.bottom &&
+            !_children.bottomRight->_neighbors.bottom) {
+            indices.push_back(BLIndex + 1);
+            indices.push_back(BLIndex + 2);
+            indices.push_back(BRIndex + 3);
+        }
+    }
+
+    _children.topLeft->addChildrenVertices(vertices, indices);
+    _children.topRight->addChildrenVertices(vertices, indices);
+    _children.bottomLeft->addChildrenVertices(vertices, indices);
+    _children.bottomRight->addChildrenVertices(vertices, indices);
 }
 
 bool QuadTree::needSplit(const Graphics::Camera& camera) {

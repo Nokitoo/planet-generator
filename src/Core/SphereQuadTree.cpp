@@ -173,22 +173,28 @@ void SphereQuadTree::update(const Graphics::Camera& camera) {
     System::Vector<uint32_t> indices(500);
 
     if (isFacingCamera(_leftQuadTree.get(), camera)) {
-        _leftQuadTree->update(vertices, indices, camera);
+        _leftQuadTree->update(camera);
+        _leftQuadTree->addChildrenVertices(vertices, indices);
     }
     if (isFacingCamera(_rightQuadTree.get(), camera)) {
-        _rightQuadTree->update(vertices, indices, camera);
+        _rightQuadTree->update(camera);
+        _rightQuadTree->addChildrenVertices(vertices, indices);
     }
     if (isFacingCamera(_frontQuadTree.get(), camera)) {
-        _frontQuadTree->update(vertices, indices, camera);
+        _frontQuadTree->update(camera);
+        _frontQuadTree->addChildrenVertices(vertices, indices);
     }
     if (isFacingCamera(_backQuadTree.get(), camera)) {
-        _backQuadTree->update(vertices, indices, camera);
+        _backQuadTree->update(camera);
+        _backQuadTree->addChildrenVertices(vertices, indices);
     }
     if (isFacingCamera(_topQuadTree.get(), camera)) {
-        _topQuadTree->update(vertices, indices, camera);
+        _topQuadTree->update(camera);
+        _topQuadTree->addChildrenVertices(vertices, indices);
     }
     if (isFacingCamera(_bottomQuadTree.get(), camera)) {
-        _bottomQuadTree->update(vertices, indices, camera);
+        _bottomQuadTree->update(camera);
+        _bottomQuadTree->addChildrenVertices(vertices, indices);
     }
 
     _buffer.updateVertices(

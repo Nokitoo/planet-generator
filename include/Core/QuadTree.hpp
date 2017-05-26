@@ -86,7 +86,7 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices, const Graphics::Camera& camera);
+    void update(const Graphics::Camera& camera);
     void updateNeighBors();
     void setNeighBors(QuadTree* top, QuadTree* left, QuadTree* right, QuadTree* bottom);
 
