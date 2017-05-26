@@ -8,7 +8,6 @@ layout (location = 3) in vec3 cubeMapCoord;
 out vec4 outFragColor;
 
 uniform vec3 lightDir = vec3(0.0, -0.5, -0.5);
-uniform samplerCube heightMap;
 
 uniform int wireframe;
 
@@ -25,7 +24,7 @@ vec3 getDiffuse(vec3 color) {
 
 void main()
 {
-    vec3 color = vec3(fragQuadTreelevel / 10.0, fragQuadTreelevel / 10.0, 0.0);
+    vec3 color = vec3(fragQuadTreelevel / 8.0, fragQuadTreelevel / 8.0, 0.0);
     vec3 ambient = getAmbient(color);
     vec3 diffuse = getDiffuse(color);
 

@@ -39,7 +39,7 @@ private:
 
     Graphics::Camera _camera;
 
-    bool _wireframe = true;
+    bool _wireframe = false;
 };
 
 } // Namespace Core

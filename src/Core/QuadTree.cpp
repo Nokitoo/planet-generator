@@ -19,16 +19,16 @@ QuadTree::QuadTree(float size,
     glm::vec3 bottomRight = pos + (widthDir * size);
 
     _corners[0] = {
-        topLeft, static_cast<float>(_level)
+        topLeft, _widthDir, _heightDir, static_cast<float>(_level)
     };
     _corners[1] = {
-        topRight, _corners[0].quadTreeLevel
+        topRight, _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
     _corners[2] = {
-        bottomLeft, _corners[0].quadTreeLevel
+        bottomLeft, _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
     _corners[3] = {
-        bottomRight, _corners[0].quadTreeLevel
+        bottomRight, _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
 
     _center = bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f);

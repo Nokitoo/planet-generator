@@ -18,8 +18,11 @@ public:
     using LevelsTable = std::vector<float>;
 
     // TODO: Move elsewhere
+    // widthDir and heightDir are used to calculate normal in vertex shader
     struct Vertex {
         glm::vec3 pos;
+        glm::vec3 widthDir;
+        glm::vec3 heightDir;
         float quadTreeLevel;
     };
 

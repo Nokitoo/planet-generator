@@ -276,9 +276,27 @@ void SphereQuadTree::initBufferBuilder() {
         sizeof(QuadTree::Vertex),
         offsetof(QuadTree::Vertex, pos)
     });
-    // QuadTree level attribute
+    // Width direction attribute
     _bufferBuilder.addAttribute({
         1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, widthDir)
+    });
+    // Height direction attribute
+    _bufferBuilder.addAttribute({
+        2,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, heightDir)
+    });
+    // QuadTree level attribute
+    _bufferBuilder.addAttribute({
+        3,
         1,
         GL_FLOAT,
         GL_FALSE,

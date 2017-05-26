@@ -49,6 +49,7 @@ bool Texture::Image::getData(unsigned char*& data, GLsizei& width, GLsizei& heig
             return false;
     }
 
+    // TODO: Use resources manager
     int compNb = 0;
     _data = stbi_load(_fileName.c_str(), &_width, &_height, &compNb, WantedCompNb);
 
