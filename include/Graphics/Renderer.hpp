@@ -22,23 +22,23 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool wireframe = true);
+    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool debug = true);
 
 private:
     // Only the Renderer::create can create the renderer
     Renderer() = default;
     bool init();
 
+    void renderPlanets(const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
+
 private:
     bool initShaderProgram();
 
 private:
-    API::ShaderProgram _shaderProgram;
+    API::ShaderProgram _mainShaderProgram;
+    API::ShaderProgram _debugShaderProgram;
 
-    GLuint _viewUniformLocation;
-    GLuint _projUniformLocation;
-    GLuint _planetSizeUniformLocation;
-    GLuint _wireFrameUniformLocation;
+    API::ShaderProgram* _currentShaderProgram = nullptr;
 };
 
 } // Namespace Graphics

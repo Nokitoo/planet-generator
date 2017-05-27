@@ -5,16 +5,15 @@ layout (location = 1) in vec3 inWidthDir;
 layout (location = 2) in vec3 inHeightDir;
 layout (location = 3) in float inQuadTreelevel;
 
-layout (location = 0) out vec3 fragPos;
-layout (location = 1) out flat float fragQuadTreelevel;
-layout (location = 2) out vec3 fragNormal;
-layout (location = 3) out vec3 cubeMapCoord;
+layout (location = 0) out vec3 outPos;
+layout (location = 1) out flat float outQuadTreelevel;
+layout (location = 2) out vec3 outNormal;
+layout (location = 3) out vec3 outCubeMapCoord;
 
 uniform mat4 view;
 uniform mat4 proj;
 uniform float planetSize;
 uniform samplerCube heightMap;
-uniform int wireframe;
 
 uniform float heightStrength = 6.0;
 
@@ -35,10 +34,6 @@ vec3 mapCubeToSphere(vec3 pos)
 float getHeight(vec3 heightMapCoord) {
     vec4 heightMapValue = texture(heightMap, heightMapCoord);
     float height = heightMapValue.r + heightMapValue.g + heightMapValue.b;
-
-    if (wireframe == 1) {
-        return (height * heightStrength) + 0.05;
-    }
 
     return height * heightStrength;
 }
@@ -91,22 +86,22 @@ vec3 getNormal() {
 
 void main()
 {
-    fragPos = inPosition;
+    outPos = inPosition;
 
     // Convert position to range [-1.0, 1.0]
-    cubeMapCoord = getNormalizedCubeCoord(fragPos);
+    outCubeMapCoord = getNormalizedCubeCoord(outPos);
 
     // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
     // and scale [-1.0, 1.0] position to planet scale
-    fragPos = mapCubeToSphere(cubeMapCoord) * planetSize;
+    outPos = mapCubeToSphere(outCubeMapCoord) * planetSize;
 
-    vec3 vertexNormal = normalize(fragPos);
+    vec3 vertexNormal = normalize(outPos);
 
-    fragNormal = getNormal();
-    fragQuadTreelevel = inQuadTreelevel;
+    outNormal = getNormal();
+    outQuadTreelevel = inQuadTreelevel;
 
-    // Add height to frag position
-    fragPos += (vertexNormal * getHeight(cubeMapCoord));
+    // Add height to out position
+    outPos += (vertexNormal * getHeight(outCubeMapCoord));
 
-    gl_Position = proj * view * vec4(fragPos, 1.0);
+    gl_Position = proj * view * vec4(outPos, 1.0);
 }

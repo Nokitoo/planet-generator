@@ -40,8 +40,14 @@ void ShaderProgram::use() const {
 }
 
 // /!\ Don't call each frame, it's very expensive
-GLuint ShaderProgram::getUniformLocation(const char* location) const {
-    return glGetUniformLocation(_shaderProgram, location);
+GLuint ShaderProgram::getUniformLocation(const std::string& locationName) {
+    auto location = _locations.find(locationName);
+    if (location != _locations.end()) {
+        return location->second;
+    }
+
+    _locations[locationName] = glGetUniformLocation(_shaderProgram, locationName.c_str());
+    return _locations.at(locationName);
 }
 
 } // Namespace API

@@ -19,39 +19,29 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool wireframe) {
-    glUniformMatrix4fv(_viewUniformLocation,
+void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool debug) {
+    API::ShaderProgram* shaderProgram = &_mainShaderProgram;
+
+    if (debug) {
+        shaderProgram = &_debugShaderProgram;
+    }
+
+    if (shaderProgram != _currentShaderProgram) {
+        shaderProgram->use();
+    }
+
+    _currentShaderProgram = shaderProgram;
+
+    glUniformMatrix4fv(shaderProgram->getUniformLocation("view"),
         1,
         GL_FALSE,
         glm::value_ptr(camera.getView()));
-    glUniformMatrix4fv(_projUniformLocation,
+    glUniformMatrix4fv(shaderProgram->getUniformLocation("proj"),
         1,
         GL_FALSE,
         glm::value_ptr(camera.getProj()));
 
-    for (const auto& planet: planets) {
-        glUniform1f(_planetSizeUniformLocation, planet->getSize());
-        planet->getBuffer().bind();
-        planet->getHeightMap().bind();
-
-        glDrawElements(
-            GL_TRIANGLES,
-            (GLuint)planet->getBuffer().getIndicesNb(),
-            GL_UNSIGNED_INT,
-            0
-            );
-
-        if (wireframe) {
-            glUniform1i(_wireFrameUniformLocation, 1);
-            glDrawElements(
-                GL_LINE_STRIP,
-                (GLuint)planet->getBuffer().getIndicesNb(),
-                GL_UNSIGNED_INT,
-                0
-                );
-            glUniform1i(_wireFrameUniformLocation, 0);
-        }
-    }
+    renderPlanets(planets);
 }
 
 bool Renderer::init() {
@@ -66,28 +56,57 @@ bool Renderer::init() {
     return initShaderProgram();
 }
 
+void Renderer::renderPlanets(const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+    for (const auto& planet: planets) {
+        glUniform1f(_currentShaderProgram->getUniformLocation("planetSize"), planet->getSize());
+        planet->getBuffer().bind();
+        planet->getHeightMap().bind();
+        glDrawElements(
+            GL_TRIANGLES,
+            (GLuint)planet->getBuffer().getIndicesNb(),
+            GL_UNSIGNED_INT,
+            0
+            );
+    }
+}
+
 bool Renderer::initShaderProgram() {
-    API::Builder::ShaderProgram shaderProgramBuilder;
+    // Main shader program
+    {
+        API::Builder::ShaderProgram shaderProgramBuilder;
+        if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/shader.vert") ||
+            !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/shader.frag")) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't init shaders" << std::endl;
+            return false;
+        }
 
-    if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/shader.vert") ||
-        !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/shader.frag")) {
-        // TODO: replace this with logger
-        std::cerr << "Renderer::init: Can't init shaders" << std::endl;
-        return false;
+        if (!shaderProgramBuilder.build(_mainShaderProgram)) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't create main shader program" << std::endl;
+            return false;
+        }
     }
 
-    if (!shaderProgramBuilder.build(_shaderProgram)) {
-        // TODO: replace this with logger
-        std::cerr << "Renderer::init: Can't create shader program" << std::endl;
-        return false;
+    // Debug shader program
+    {
+        API::Builder::ShaderProgram shaderProgramBuilder;
+        if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/shader.vert") ||
+            !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/debug.frag") ||
+            !shaderProgramBuilder.setShader(GL_GEOMETRY_SHADER, "resources/shaders/debug.geom")) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't init shaders" << std::endl;
+            return false;
+        }
+
+        if (!shaderProgramBuilder.build(_debugShaderProgram)) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't create debug shader program" << std::endl;
+            return false;
+        }
     }
 
-    _shaderProgram.use();
-
-    _viewUniformLocation = _shaderProgram.getUniformLocation("view");
-    _projUniformLocation = _shaderProgram.getUniformLocation("proj");
-    _planetSizeUniformLocation = _shaderProgram.getUniformLocation("planetSize");
-    _wireFrameUniformLocation = _shaderProgram.getUniformLocation("wireframe");
+    _mainShaderProgram.use();
 
     return true;
 }

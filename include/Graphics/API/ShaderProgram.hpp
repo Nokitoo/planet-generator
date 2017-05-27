@@ -25,12 +25,13 @@ public:
 
     void use() const;
 
-    GLuint getUniformLocation(const char* location) const;
+    GLuint getUniformLocation(const std::string& locationName);
 
 private:
     GLuint _shaderProgram = 0;
 
     std::unordered_map<GLenum, GLuint> _shaders;
+    std::unordered_map<std::string, GLuint> _locations;
 };
 
 } // Namespace API

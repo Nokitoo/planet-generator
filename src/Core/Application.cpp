@@ -47,13 +47,13 @@ bool Application::run() {
             }
             else if (event.type == Window::Event::Type::KeyPressed &&
                 event.key.code == Window::Keyboard::Key::M) {
-                _wireframe = !_wireframe;
+                _debug = !_debug;
             }
         }
 
         _window->beginFrame();
         onFrame();
-        _renderer->render(_camera, _planets, _wireframe);
+        _renderer->render(_camera, _planets, _debug);
         _window->endFrame();
     }
 
