@@ -53,7 +53,11 @@ bool Application::run() {
             }
             if (event.type == Window::Event::Type::KeyPressed &&
                 event.key.code == Window::Keyboard::Key::N) {
-                debug.normalsDisplayed(!debug.normalsDisplayed());
+                debug.verticesNormalsDisplayed(!debug.verticesNormalsDisplayed());
+            }
+            if (event.type == Window::Event::Type::KeyPressed &&
+                event.key.code == Window::Keyboard::Key::B) {
+                debug.facesNormalsDisplayed(!debug.facesNormalsDisplayed());
             }
         }
 

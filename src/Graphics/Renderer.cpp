@@ -28,7 +28,8 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         _debugShaderProgram.use();
 
         glUniform1i(_debugShaderProgram.getUniformLocation("wireframeDisplayed"), _debug.wireframeDisplayed());
-        glUniform1i(_debugShaderProgram.getUniformLocation("normalsDisplayed"), _debug.normalsDisplayed());
+        glUniform1i(_debugShaderProgram.getUniformLocation("verticesNormalsDisplayed"), _debug.verticesNormalsDisplayed());
+        glUniform1i(_debugShaderProgram.getUniformLocation("facesNormalsDisplayed"), _debug.facesNormalsDisplayed());
 
         renderPlanets(_debugShaderProgram, camera, planets);
         _mainShaderProgram.use();

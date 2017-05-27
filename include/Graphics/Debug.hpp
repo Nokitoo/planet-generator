@@ -4,10 +4,12 @@ namespace Graphics {
 
 struct Debug {
     void wireframeDisplayed(bool displayed);
-    void normalsDisplayed(bool displayed);
+    void verticesNormalsDisplayed(bool displayed);
+    void facesNormalsDisplayed(bool displayed);
 
     bool wireframeDisplayed() const;
-    bool normalsDisplayed() const;
+    bool verticesNormalsDisplayed() const;
+    bool facesNormalsDisplayed() const;
     bool isActivated() const;
 
 private:
@@ -15,7 +17,8 @@ private:
 
 private:
     bool _wireframe = false;
-    bool _normals = false;
+    bool _verticesNormals = false;
+    bool _facesNormals = false;
 
     bool _activated = false;
 };
