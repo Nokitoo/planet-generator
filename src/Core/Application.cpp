@@ -33,6 +33,7 @@ bool Application::init() {
 }
 
 bool Application::run() {
+    Graphics::Debug& debug = _renderer->getDebug();
     while (1) {
         Window::Event event;
 
@@ -45,15 +46,20 @@ bool Application::run() {
             if (event.type == Window::Event::Type::MouseMoved) {
                 updateCameraRotation(event);
             }
-            else if (event.type == Window::Event::Type::KeyPressed &&
+
+            if (event.type == Window::Event::Type::KeyPressed &&
                 event.key.code == Window::Keyboard::Key::M) {
-                _debug = !_debug;
+                debug.wireframeDisplayed(!debug.wireframeDisplayed());
+            }
+            if (event.type == Window::Event::Type::KeyPressed &&
+                event.key.code == Window::Keyboard::Key::N) {
+                debug.normalsDisplayed(!debug.normalsDisplayed());
             }
         }
 
         _window->beginFrame();
         onFrame();
-        _renderer->render(_camera, _planets, _debug);
+        _renderer->render(_camera, _planets);
         _window->endFrame();
     }
 

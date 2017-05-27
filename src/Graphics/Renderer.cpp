@@ -19,29 +19,24 @@ std::unique_ptr<Renderer> Renderer::create() {
     return renderer;
 }
 
-void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool debug) {
-    API::ShaderProgram* shaderProgram = &_mainShaderProgram;
-
-    if (debug) {
-        shaderProgram = &_debugShaderProgram;
+void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+    if (!_debug.wireframeDisplayed()) {
+        renderPlanets(_mainShaderProgram, camera, planets);
     }
 
-    if (shaderProgram != _currentShaderProgram) {
-        shaderProgram->use();
+    if (_debug.isActivated()) {
+        _debugShaderProgram.use();
+
+        glUniform1i(_debugShaderProgram.getUniformLocation("wireframeDisplayed"), _debug.wireframeDisplayed());
+        glUniform1i(_debugShaderProgram.getUniformLocation("normalsDisplayed"), _debug.normalsDisplayed());
+
+        renderPlanets(_debugShaderProgram, camera, planets);
+        _mainShaderProgram.use();
     }
+}
 
-    _currentShaderProgram = shaderProgram;
-
-    glUniformMatrix4fv(shaderProgram->getUniformLocation("view"),
-        1,
-        GL_FALSE,
-        glm::value_ptr(camera.getView()));
-    glUniformMatrix4fv(shaderProgram->getUniformLocation("proj"),
-        1,
-        GL_FALSE,
-        glm::value_ptr(camera.getProj()));
-
-    renderPlanets(planets);
+Debug& Renderer::getDebug() {
+    return _debug;
 }
 
 bool Renderer::init() {
@@ -56,9 +51,18 @@ bool Renderer::init() {
     return initShaderProgram();
 }
 
-void Renderer::renderPlanets(const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+void Renderer::renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+    glUniformMatrix4fv(shaderProgram.getUniformLocation("view"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(camera.getView()));
+    glUniformMatrix4fv(shaderProgram.getUniformLocation("proj"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(camera.getProj()));
+
     for (const auto& planet: planets) {
-        glUniform1f(_currentShaderProgram->getUniformLocation("planetSize"), planet->getSize());
+        glUniform1f(shaderProgram.getUniformLocation("planetSize"), planet->getSize());
         planet->getBuffer().bind();
         planet->getHeightMap().bind();
         glDrawElements(

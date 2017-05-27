@@ -6,6 +6,7 @@
 
 #include <Core/SphereQuadTree.hpp> // Graphics::API::Buffer
 #include <Graphics/API/ShaderProgram.hpp> // Graphics::API::ShaderProgram
+#include <Graphics/Debug.hpp> // Graphics::Debug
 #include <Graphics/Camera.hpp> // Graphics::Camera
 
 namespace Graphics {
@@ -22,14 +23,16 @@ public:
 
     static std::unique_ptr<Renderer> create();
 
-    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets, bool debug = true);
+    void render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
+
+    Debug& getDebug();
 
 private:
     // Only the Renderer::create can create the renderer
     Renderer() = default;
     bool init();
 
-    void renderPlanets(const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
+    void renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
 
 private:
     bool initShaderProgram();
@@ -39,6 +42,8 @@ private:
     API::ShaderProgram _debugShaderProgram;
 
     API::ShaderProgram* _currentShaderProgram = nullptr;
+
+    Debug _debug;
 };
 
 } // Namespace Graphics
