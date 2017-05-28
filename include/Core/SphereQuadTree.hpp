@@ -24,7 +24,7 @@ public:
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    void update(const Graphics::Camera& camera);
+    void update(Graphics::Camera& camera);
 
     const Graphics::API::Buffer& getBuffer() const;
     float getSize() const;

@@ -38,6 +38,8 @@ private:
     std::vector<std::unique_ptr<Core::SphereQuadTree>> _planets;
 
     Graphics::Camera _camera;
+
+    bool _frustumLocked = false;
 };
 
 } // Namespace Core

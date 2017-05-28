@@ -23,10 +23,11 @@ bool Application::init() {
 
     float sphereSize = 100.0f;
 
-    _camera.setPos({sphereSize / 2.0f, sphereSize * 1.5f, sphereSize * 1.5f});
+    _camera.setPos({0.0f, 0.0f, sphereSize * 1.5f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
-    _camera.setNear(2.0f);
+    _camera.setNear(0.1f);
     _camera.setFar(1000.0f);
+    _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
     _planets.push_back(std::make_unique<Core::SphereQuadTree>(sphereSize));
 
     return true;
@@ -58,6 +59,14 @@ bool Application::run() {
             if (event.type == Window::Event::Type::KeyPressed &&
                 event.key.code == Window::Keyboard::Key::B) {
                 debug.facesNormalsDisplayed(!debug.facesNormalsDisplayed());
+            }
+            if (event.type == Window::Event::Type::KeyPressed &&
+                event.key.code == Window::Keyboard::Key::L) {
+                _frustumLocked = !_frustumLocked;
+                _camera.lockFrustum(_frustumLocked);
+            }
+            if (event.type == Window::Event::Type::Resize) {
+                _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
             }
         }
 

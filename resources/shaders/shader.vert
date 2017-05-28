@@ -1,9 +1,10 @@
 #version 420 core
 
-layout (location = 0) in vec3 inPosition;
-layout (location = 1) in vec3 inWidthDir;
-layout (location = 2) in vec3 inHeightDir;
-layout (location = 3) in float inQuadTreelevel;
+layout (location = 0) in vec3 inCubePosition;
+layout (location = 1) in vec3 inSpherePosition;
+layout (location = 2) in vec3 inWidthDir;
+layout (location = 3) in vec3 inHeightDir;
+layout (location = 4) in float inQuadTreelevel;
 
 layout (location = 0) out vec3 outPos;
 layout (location = 1) out flat float outQuadTreelevel;
@@ -15,7 +16,7 @@ uniform mat4 proj;
 uniform float planetSize;
 uniform samplerCube heightMap;
 
-uniform float heightStrength = 6.0;
+uniform float heightStrength = 20.0;
 
 // Formulas: http://mathproofs.blogspot.kr/2005/07/mapping-cube-to-sphere.html
 vec3 mapCubeToSphere(vec3 pos)
@@ -33,9 +34,8 @@ vec3 mapCubeToSphere(vec3 pos)
 
 float getHeight(vec3 heightMapCoord) {
     vec4 heightMapValue = texture(heightMap, heightMapCoord);
-    float height = heightMapValue.r + heightMapValue.g + heightMapValue.b;
 
-    return height * heightStrength;
+    return heightMapValue.r * heightStrength;
 }
 
 vec3 getNormalizedCubeCoord(vec3 worldCubeCoord) {
@@ -54,10 +54,10 @@ vec3 getNormal() {
      *         o
     */
     // Calculate normalized cube position of neighbors
-    vec3 leftCubePos = getNormalizedCubeCoord(inPosition - (inWidthDir * quadSize));
-    vec3 rightCubePos = getNormalizedCubeCoord(inPosition + (inWidthDir * quadSize));
-    vec3 topCubePos = getNormalizedCubeCoord(inPosition + (inHeightDir * quadSize));
-    vec3 bottomCubePos = getNormalizedCubeCoord(inPosition - (inHeightDir * quadSize));
+    vec3 leftCubePos = getNormalizedCubeCoord(inCubePosition - (inWidthDir * quadSize));
+    vec3 rightCubePos = getNormalizedCubeCoord(inCubePosition + (inWidthDir * quadSize));
+    vec3 topCubePos = getNormalizedCubeCoord(inCubePosition + (inHeightDir * quadSize));
+    vec3 bottomCubePos = getNormalizedCubeCoord(inCubePosition - (inHeightDir * quadSize));
 
     // Calculate height of neighbors using cube positions
     float leftCubePosHeight = getHeight(leftCubePos);
@@ -86,14 +86,10 @@ vec3 getNormal() {
 
 void main()
 {
-    outPos = inPosition;
+    outPos = inSpherePosition;
 
     // Convert position to range [-1.0, 1.0]
-    outCubeMapCoord = getNormalizedCubeCoord(outPos);
-
-    // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
-    // and scale [-1.0, 1.0] position to planet scale
-    outPos = mapCubeToSphere(outCubeMapCoord) * planetSize;
+    outCubeMapCoord = getNormalizedCubeCoord(inCubePosition);
 
     vec3 vertexNormal = normalize(outPos);
 

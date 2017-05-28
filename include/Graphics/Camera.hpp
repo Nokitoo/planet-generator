@@ -3,6 +3,7 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 
 #include <Graphics/Transform.hpp> // Graphics::Transform
+#include <Graphics/Frustum.hpp> // Graphics::Frustum
 
 namespace Graphics {
 
@@ -24,11 +25,14 @@ public:
     float getFar() const;
     float getNear() const;
     float getAspect() const;
+    const Frustum& getFrustum();
 
     void  setFov(float fov);
     void  setNear(float near);
     void  setFar(float far);
     void  setAspect(float far);
+
+    void lockFrustum(bool lock);
 
 private:
     void  updateProj();
@@ -48,6 +52,10 @@ private:
 
     glm::mat4 _proj;
     glm::mat4 _view;
+
+    Frustum _frustum;
+
+    bool _frustumLocked = false;
 };
 
 } // Namespace Graphics

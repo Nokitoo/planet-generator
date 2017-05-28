@@ -38,6 +38,8 @@ public:
     bool isMouseButtonPressed(Mouse::Button button) const;
     const char* mouseButtonToString(Mouse::Button button) const;
 
+    const glm::ivec2& getSize() const;
+
 private:
     // Only the Window::create can create the window
     Window() = default;

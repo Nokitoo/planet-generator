@@ -11,31 +11,47 @@ QuadTree::QuadTree(float size,
                     Face face,
                     const LevelsTable& levelsTable,
                     uint32_t level,
-                    QuadTree* parent):
-    _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal), _face(face), _levelsTable(levelsTable), _level(level), _parent(parent) {
+                    float planetSize):
+    _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal), _face(face), _levelsTable(levelsTable), _level(level), _planetSize(planetSize) {
     glm::vec3 topLeft = pos + (heightDir * size);
     glm::vec3 topRight = pos + (widthDir * size) + (heightDir * size);
     glm::vec3 bottomLeft = pos;
     glm::vec3 bottomRight = pos + (widthDir * size);
 
     _corners[0] = {
-        topLeft, _widthDir, _heightDir, static_cast<float>(_level)
+        topLeft, calculateSpherePos(topLeft), _widthDir, _heightDir, static_cast<float>(_level)
     };
     _corners[1] = {
-        topRight, _widthDir, _heightDir, _corners[0].quadTreeLevel
+        topRight, calculateSpherePos(topRight), _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
     _corners[2] = {
-        bottomLeft, _widthDir, _heightDir, _corners[0].quadTreeLevel
+        bottomLeft, calculateSpherePos(bottomLeft), _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
     _corners[3] = {
-        bottomRight, _widthDir, _heightDir, _corners[0].quadTreeLevel
+        bottomRight, calculateSpherePos(bottomRight), _widthDir, _heightDir, _corners[0].quadTreeLevel
     };
 
-    _center = bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f);
+    _center = calculateSpherePos(bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f));
+
+    // Calculate vector between the non-bended center of the quad and bended center
+    glm::vec3 cubePosCenter = (_corners[0].spherePos + _corners[1].spherePos + _corners[2].spherePos + _corners[3].spherePos) / 4.0f;
+    glm::vec3 bendingDir = _center - cubePosCenter;
+
+    // Upper plane perpendicular with _center
+    _cornersUp[0] = _corners[0].spherePos + bendingDir;
+    _cornersUp[1] = _corners[1].spherePos + bendingDir;
+    _cornersUp[2] = _corners[2].spherePos + bendingDir;
+    _cornersUp[3] = _corners[3].spherePos + bendingDir;
+
+    // Add max height
+    _cornersUp[0] += glm::normalize(_corners[0].spherePos) * 20.0f;
+    _cornersUp[1] += glm::normalize(_corners[1].spherePos) * 20.0f;
+    _cornersUp[2] += glm::normalize(_corners[2].spherePos) * 20.0f;
+    _cornersUp[3] += glm::normalize(_corners[3].spherePos) * 20.0f;
 }
 
-void QuadTree::update(const Graphics::Camera& camera) {
-    if (!isInsideFrustrum(camera)) {
+void QuadTree::update(Graphics::Camera& camera) {
+    if (!isInsideFrustum(camera)) {
         if (_split) {
             merge();
         }
@@ -415,8 +431,8 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
          *       \   /
          *        \ /
         */
-        if (!_children.topLeft->_split &&
-            !_children.topRight->_split &&
+        if ((!_children.topLeft->_split ||
+            !_children.topRight->_split) &&
             !_children.topLeft->_neighbors.top &&
             !_children.topRight->_neighbors.top) {
             indices.push_back(TLIndex);
@@ -434,8 +450,8 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
          *      | /
          *      |/
         */
-        if (!_children.topLeft->_split &&
-            !_children.bottomLeft->_split &&
+        if ((!_children.topLeft->_split ||
+            !_children.bottomLeft->_split) &&
             !_children.topLeft->_neighbors.left &&
             !_children.bottomLeft->_neighbors.left) {
             indices.push_back(TLIndex);
@@ -453,8 +469,8 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
          *       \ |
          *        \|
         */
-        if (!_children.topRight->_split &&
-            !_children.bottomRight->_split &&
+        if ((!_children.topRight->_split ||
+            !_children.bottomRight->_split) &&
             !_children.topRight->_neighbors.right &&
             !_children.bottomRight->_neighbors.right) {
             indices.push_back(TRIndex + 1);
@@ -469,8 +485,8 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
          *       /   \
          *      /__ __\
         */
-        if (!_children.bottomLeft->_split &&
-            !_children.bottomRight->_split &&
+        if ((!_children.bottomLeft->_split ||
+            !_children.bottomRight->_split) &&
             !_children.bottomLeft->_neighbors.bottom &&
             !_children.bottomRight->_neighbors.bottom) {
             indices.push_back(BLIndex + 1);
@@ -483,6 +499,27 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
     _children.topRight->addChildrenVertices(vertices, indices);
     _children.bottomLeft->addChildrenVertices(vertices, indices);
     _children.bottomRight->addChildrenVertices(vertices, indices);
+}
+
+static glm::vec3 getNormalizedCubeCoord(glm::vec3 worldCubeCoord, float planetSize) {
+    return normalize((worldCubeCoord + (planetSize / 2.0f)) / planetSize * 2.0f - 1.0f);
+}
+
+// Formulas: http://mathproofs.blogspot.kr/2005/07/mapping-cube-to-sphere.html
+glm::vec3 QuadTree::calculateSpherePos(const glm::vec3& cubePos) {
+    // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
+    // and scale [-1.0, 1.0] sphere position to planet scale
+    glm::vec3 pos = getNormalizedCubeCoord(cubePos, _planetSize);
+
+    float x2 = pos.x * pos.x;
+    float y2 = pos.y * pos.y;
+    float z2 = pos.z * pos.z;
+
+    pos.x = pos.x * sqrt(1.0 - (y2 * 0.5) - (z2 * 0.5) + ((y2 * z2) / 3.0));
+    pos.y = pos.y * sqrt(1.0 - (z2 * 0.5) - (x2 * 0.5) + ((z2 * x2) / 3.0));
+    pos.z = pos.z * sqrt(1.0 - (x2 * 0.5) - (y2 * 0.5) + ((x2 * y2) / 3.0));
+
+    return normalize(pos) * _planetSize;
 }
 
 bool QuadTree::needSplit(const Graphics::Camera& camera) {
@@ -504,7 +541,7 @@ void QuadTree::split() {
         _face,
         _levelsTable,
         _level + 1,
-        this
+        _planetSize
         );
     _children.topRight = std::make_unique<QuadTree>(
         childrenSize,
@@ -515,7 +552,7 @@ void QuadTree::split() {
         _face,
         _levelsTable,
         _level + 1,
-        this
+        _planetSize
         );
     _children.bottomLeft = std::make_unique<QuadTree>(
         childrenSize,
@@ -526,7 +563,7 @@ void QuadTree::split() {
         _face,
         _levelsTable,
         _level + 1,
-        this
+        _planetSize
         );
     _children.bottomRight = std::make_unique<QuadTree>(
         childrenSize,
@@ -537,7 +574,7 @@ void QuadTree::split() {
         _face,
         _levelsTable,
         _level + 1,
-        this
+        _planetSize
         );
 
     _split = true;
@@ -578,8 +615,19 @@ void QuadTree::merge() {
     _children.bottomRight = nullptr;
 }
 
-bool QuadTree::isInsideFrustrum(const Graphics::Camera& camera) const {
-    return true;
+bool QuadTree::isInsideFrustum(Graphics::Camera& camera) const {
+    return camera.getFrustum().isShapeInside(
+        {
+            _corners[0].spherePos,
+            _corners[1].spherePos,
+            _corners[2].spherePos,
+            _corners[3].spherePos,
+            _cornersUp[0],
+            _cornersUp[1],
+            _cornersUp[2],
+            _cornersUp[3]
+        }
+    );
 }
 
 } // Namespace Core

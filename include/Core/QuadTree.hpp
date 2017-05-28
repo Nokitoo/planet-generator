@@ -20,7 +20,8 @@ public:
     // TODO: Move elsewhere
     // widthDir and heightDir are used to calculate normal in vertex shader
     struct Vertex {
-        glm::vec3 pos;
+        glm::vec3 cubePos;
+        glm::vec3 spherePos;
         glm::vec3 widthDir;
         glm::vec3 heightDir;
         float quadTreeLevel;
@@ -79,7 +80,7 @@ public:
         Face face,
         const LevelsTable& levelsTable,
         uint32_t level,
-        QuadTree* parent = nullptr);
+        float planetSize);
     QuadTree() = delete;
     ~QuadTree() = default;
 
@@ -89,7 +90,7 @@ public:
     QuadTree& operator=(const QuadTree& quadTree) = delete;
     QuadTree&& operator=(QuadTree&& quadTree) = delete;
 
-    void update(const Graphics::Camera& camera);
+    void update(Graphics::Camera& camera);
     void updateNeighBors();
     void setNeighBors(QuadTree* top, QuadTree* left, QuadTree* right, QuadTree* bottom);
 
@@ -102,12 +103,14 @@ public:
 private:
     void addChildrenVertices(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices);
 
+    glm::vec3 calculateSpherePos(const glm::vec3& cubePos);
+
     bool needSplit(const Graphics::Camera& camera);
     void split();
     bool needMerge(const Graphics::Camera& camera);
     void merge();
 
-    bool isInsideFrustrum(const Graphics::Camera& camera) const;
+    bool isInsideFrustum(Graphics::Camera& camera) const;
 
 private:
     Children _children;
@@ -121,13 +124,15 @@ private:
 
     Vertex _corners[4];
     glm::vec3 _center;
+    glm::vec3 _cornersUp[4];
+
     Face _face = Face::FRONT;
 
     const LevelsTable& _levelsTable;
     uint32_t _level = 0;
 
     bool _split = false;
-    QuadTree* _parent = nullptr;
+    float _planetSize = 0;
 };
 
 inline QuadTree::ChildOrientation operator+(QuadTree::ChildOrientation a, uint8_t b) {

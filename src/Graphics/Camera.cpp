@@ -77,6 +77,15 @@ float Camera::getAspect() const {
     return _aspect;
 }
 
+const Frustum& Camera::getFrustum() {
+    if (isDirty()) {
+        updateView();
+        isDirty(false);
+    }
+
+    return _frustum;
+}
+
 void Camera::setFov(float fov) {
     _fov = fov;
 
@@ -99,6 +108,15 @@ void Camera::setAspect(float aspect) {
     _aspect = aspect;
 
     _needUpdateProj = true;
+    isDirty(true);
+}
+
+void Camera::lockFrustum(bool lock) {
+    _frustumLocked = lock;
+
+    if (!_frustumLocked) {
+        isDirty(true);
+    }
 }
 
 void Camera::updateProj() {
@@ -111,6 +129,10 @@ void Camera::updateView() {
     glm::mat4 translate = glm::translate(glm::mat4(1.0), -getPos());
     glm::mat4 rotate = glm::mat4_cast(getOrientation());
     _view = rotate * translate;
+
+    if (!_frustumLocked) {
+        _frustum.update(*this);
+    }
 }
 
 } // Namespace Graphics

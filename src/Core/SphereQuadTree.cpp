@@ -23,7 +23,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
         QuadTree::Face::LEFT,
         _levelsTable,
-        0
+        0,
+        _size
         );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
@@ -33,7 +34,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(1.0f, 0.0f, 0.0f), // Normal
         QuadTree::Face::RIGHT,
         _levelsTable,
-        0
+        0,
+        _size
         );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
@@ -43,7 +45,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 0.0f, 1.0f), // Normal
         QuadTree::Face::FRONT,
         _levelsTable,
-        0
+        0,
+        _size
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
@@ -53,7 +56,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 0.0f, -1.0f), // Normal
         QuadTree::Face::BACK,
         _levelsTable,
-        0
+        0,
+        _size
         );
     _topQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
@@ -63,7 +67,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, 1.0f, 0.0f), // Normal
         QuadTree::Face::TOP,
         _levelsTable,
-        0
+        0,
+        _size
         );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
         _size, // Width
@@ -73,7 +78,8 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
         glm::vec3(0.0f, -1.0f, 0.0f), // Normal
         QuadTree::Face::BOTTOM,
         _levelsTable,
-        0
+        0,
+        _size
         );
 
     _leftQuadTree->setNeighBors(
@@ -168,7 +174,7 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
     return *this;
 }
 
-void SphereQuadTree::update(const Graphics::Camera& camera) {
+void SphereQuadTree::update(Graphics::Camera& camera) {
     System::Vector<QuadTree::Vertex> vertices(500);
     System::Vector<uint32_t> indices(500);
 
@@ -229,12 +235,12 @@ bool SphereQuadTree::initHeightMap() {
     textureBuilder.setType(GL_TEXTURE_CUBE_MAP);
     textureBuilder.setFormat(GL_RGB);
     textureBuilder.setInternalFormat(GL_RGB);
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/brush.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/brush.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/brush.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/brush.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/brush.jpg");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/brush.jpg");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/brush2.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/brush2.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/brush2.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/brush2.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/brush2.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/brush2.png");
     textureBuilder.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -250,7 +256,7 @@ bool SphereQuadTree::initHeightMap() {
 }
 
 void SphereQuadTree::initLevelsDistance() {
-    uint32_t maxLevels = 4;
+    uint32_t maxLevels = 5;
     float distanceSteps = _size / 2.0f;
     float distance = distanceSteps * maxLevels;
 
@@ -267,18 +273,27 @@ void SphereQuadTree::initLevelsDistance() {
 }
 
 void SphereQuadTree::initBufferBuilder() {
-    // Position attribute
+    // Cube position attribute
     _bufferBuilder.addAttribute({
         0,
         3,
         GL_FLOAT,
         GL_FALSE,
         sizeof(QuadTree::Vertex),
-        offsetof(QuadTree::Vertex, pos)
+        offsetof(QuadTree::Vertex, cubePos)
+    });
+    // Sphere position attribute
+    _bufferBuilder.addAttribute({
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(QuadTree::Vertex),
+        offsetof(QuadTree::Vertex, spherePos)
     });
     // Width direction attribute
     _bufferBuilder.addAttribute({
-        1,
+        2,
         3,
         GL_FLOAT,
         GL_FALSE,
@@ -287,7 +302,7 @@ void SphereQuadTree::initBufferBuilder() {
     });
     // Height direction attribute
     _bufferBuilder.addAttribute({
-        2,
+        3,
         3,
         GL_FLOAT,
         GL_FALSE,
@@ -296,7 +311,7 @@ void SphereQuadTree::initBufferBuilder() {
     });
     // QuadTree level attribute
     _bufferBuilder.addAttribute({
-        3,
+        4,
         1,
         GL_FLOAT,
         GL_FALSE,

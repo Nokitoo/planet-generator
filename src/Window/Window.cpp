@@ -65,6 +65,13 @@ bool Window::pollEvent(Event& event) {
                 event.mouse.pos = {sdlEvent.button.x, sdlEvent.button.y};
                 event.mouse.scrollOffset = {sdlEvent.wheel.x, sdlEvent.wheel.y};
                 return true;
+            case SDL_WINDOWEVENT:
+                if (sdlEvent.window.event == SDL_WINDOWEVENT_RESIZED ||
+                    sdlEvent.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                    event.type = Event::Type::Resize;
+                    return true;
+                }
+                return false;
             default:
                 // Event not handled
                 return pollEvent(event);
@@ -161,6 +168,10 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
     return initOpenGL();
+}
+
+const glm::ivec2& Window::getSize() const {
+    return _size;
 }
 
 bool Window::initOpenGL() {

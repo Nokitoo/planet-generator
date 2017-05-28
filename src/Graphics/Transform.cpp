@@ -7,14 +7,18 @@ namespace Graphics {
 Transform::Transform(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _forward = camera._forward;
+    _localForward = camera._localForward;
+    _localRight = camera._localRight;
+    _localUp = camera._localUp;
     isDirty(true);
 }
 
 Transform::Transform(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _forward = camera._forward;
+    _localForward = camera._localForward;
+    _localRight = camera._localRight;
+    _localUp = camera._localUp;
     isDirty(true);
 
     camera._pos = {};
@@ -24,7 +28,9 @@ Transform::Transform(Transform&& camera) {
 Transform& Transform::operator=(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _forward = camera._forward;
+    _localForward = camera._localForward;
+    _localRight = camera._localRight;
+    _localUp = camera._localUp;
     isDirty(true);
 
     return *this;
@@ -33,7 +39,9 @@ Transform& Transform::operator=(const Transform& camera) {
 Transform& Transform::operator=(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _forward = camera._forward;
+    _localForward = camera._localForward;
+    _localRight = camera._localRight;
+    _localUp = camera._localUp;
     isDirty(true);
 
     camera._pos = {};
@@ -54,6 +62,13 @@ const glm::vec3& Transform::getDir() const {
     return _dir;
 }
 
+const glm::vec3& Transform::getRight() const {
+    return _right;
+}
+const glm::vec3& Transform::getUp() const {
+    return _up;
+}
+
 bool Transform::isDirty() const {
     return _dirty;
 }
@@ -70,7 +85,7 @@ void Transform::isDirty(bool dirty) {
 // Calculations from http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
 void Transform::lookAt(const glm::vec3& pos) {
     glm::vec3 u = glm::normalize(pos - _pos);
-    glm::vec3 v = _forward;
+    glm::vec3 v = _localForward;
 
     float normUNormV = sqrt(glm::dot(u, u) * glm::dot(v, v));
     float realPart = normUNormV + glm::dot(u, v);
@@ -92,22 +107,35 @@ void Transform::lookAt(const glm::vec3& pos) {
     }
 
     _orientation = glm::normalize(glm::quat(realPart, w.x, w.y, w.z));
-    _dir = glm::normalize(_orientation * _forward);
+    _dir = glm::normalize(_localForward * _orientation);
+    _right = glm::normalize(_localRight * _orientation);
+    _up = glm::normalize(_localUp * _orientation);
 
     isDirty(true);
 }
 
 void Transform::translate(const glm::vec3& direction) {
+    if (!direction.x && !direction.y && !direction.z) {
+        return;
+    }
+
     _pos += direction * getOrientation();
     isDirty(true);
 }
 
 void Transform::rotate(float amount, const glm::vec3& axis) {
+    if (!amount) {
+        return;
+    }
+
     glm::quat pitch = glm::angleAxis(axis.x * amount, glm::vec3(1, 0, 0));
     glm::quat yaw = glm::angleAxis(axis.y * amount, glm::vec3(0, 1, 0));
 
     _orientation = glm::normalize(pitch * _orientation * yaw);
-    _dir = glm::normalize(_orientation * _forward);
+
+    _dir = glm::normalize(_localForward * _orientation);
+    _right = glm::normalize(_localRight * _orientation);
+    _up = glm::normalize(_localUp * _orientation);
 
     isDirty(true);
 }

@@ -9,6 +9,7 @@ namespace Window {
         // TODO: add other events
         enum class Type : uint32_t {
             Close,
+            Resize,
             KeyPressed,
             KeyReleased,
             MouseMoved,
