@@ -12,7 +12,7 @@ namespace System {
 template<typename T>
 class Vector {
 public:
-    Vector(uint32_t chunkSize): _chunkSize(chunkSize) {}
+    Vector(uint32_t chunkSize, uint32_t baseSize = 0);
     ~Vector() = default;
 
     Vector(const Vector& vector) = delete;

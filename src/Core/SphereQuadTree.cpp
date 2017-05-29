@@ -175,8 +175,14 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
 }
 
 void SphereQuadTree::update(Graphics::Camera& camera) {
-    System::Vector<QuadTree::Vertex> vertices(500);
-    System::Vector<uint32_t> indices(500);
+    uint32_t verticesNb = _buffer.getVerticesNb() ? _buffer.getVerticesNb() : 500;
+    uint32_t indicesNb = _buffer.getIndicesNb() ? _buffer.getIndicesNb() : 500;
+
+    // Create indices and vertices buffers with chunks of 500
+    // (resize is perform only every 500 vertices/indices added in the vector)
+    // We also init the vector with the previous frame size to reduce the resizes
+    System::Vector<QuadTree::Vertex> vertices(500, verticesNb);
+    System::Vector<uint32_t> indices(500, indicesNb);
 
     if (isFacingCamera(_leftQuadTree.get(), camera)) {
         _leftQuadTree->update(camera);

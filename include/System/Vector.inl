@@ -1,4 +1,11 @@
 template<typename T>
+inline Vector<T>::Vector(uint32_t chunkSize, uint32_t baseSize): _chunkSize(chunkSize) {
+    if (baseSize) {
+        _vector.resize(baseSize);
+    }
+}
+
+template<typename T>
 inline void Vector<T>::push_back(T elem) {
     uint32_t vectorSize = static_cast<uint32_t>(_vector.size());
 
