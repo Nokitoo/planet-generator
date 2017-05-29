@@ -29,7 +29,9 @@ private:
     uint32_t _chunkSize;
 
     std::vector<T> _vector;
+
     uint32_t _elemsNb = 0;
+    uint32_t _vectorCapacity = 0;
 };
 
 #include <System/Vector.inl>

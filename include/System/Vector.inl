@@ -1,19 +1,19 @@
 template<typename T>
 inline Vector<T>::Vector(uint32_t chunkSize, uint32_t baseSize): _chunkSize(chunkSize) {
     if (baseSize) {
-        _vector.resize(baseSize);
+        _vector.reserve(baseSize);
     }
+    _vectorCapacity = baseSize;
 }
 
 template<typename T>
 inline void Vector<T>::push_back(T elem) {
-    uint32_t vectorSize = static_cast<uint32_t>(_vector.size());
-
-    if (!_elemsNb || _elemsNb == vectorSize) {
-        _vector.resize(vectorSize + _chunkSize);
+    if (!_elemsNb || _elemsNb == _vectorCapacity) {
+        _vectorCapacity += _chunkSize;
+        _vector.resize(_vectorCapacity);
     }
 
-    _vector[_elemsNb] = elem;
+    _vector[_elemsNb] = std::move(elem);
     ++_elemsNb;
 }
 
