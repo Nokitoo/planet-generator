@@ -1,4 +1,4 @@
-#include <unordered_map>
+#include <iostream>
 #include <Core/QuadTree.hpp> // Graphics::Core::QuadTree
 
 namespace Core {
@@ -18,36 +18,22 @@ QuadTree::QuadTree(float size,
     glm::vec3 bottomLeft = pos;
     glm::vec3 bottomRight = pos + (widthDir * size);
 
-    _corners[0] = {
-        topLeft, calculateSpherePos(topLeft), _widthDir, _heightDir, static_cast<float>(_level)
-    };
-    _corners[1] = {
-        topRight, calculateSpherePos(topRight), _widthDir, _heightDir, _corners[0].quadTreeLevel
-    };
-    _corners[2] = {
-        bottomLeft, calculateSpherePos(bottomLeft), _widthDir, _heightDir, _corners[0].quadTreeLevel
-    };
-    _corners[3] = {
-        bottomRight, calculateSpherePos(bottomRight), _widthDir, _heightDir, _corners[0].quadTreeLevel
-    };
-
     _center = calculateSpherePos(bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f));
 
-    // Calculate vector between the non-bended center of the quad and bended center
-    glm::vec3 cubePosCenter = (_corners[0].spherePos + _corners[1].spherePos + _corners[2].spherePos + _corners[3].spherePos) / 4.0f;
-    glm::vec3 bendingDir = _center - cubePosCenter;
+    _corners.topLeft = {
+        topLeft, calculateSpherePos(topLeft), _widthDir, _heightDir, static_cast<float>(_level)
+    };
+    _corners.topRight = {
+        topRight, calculateSpherePos(topRight), _widthDir, _heightDir, _corners.topLeft.quadTreeLevel
+    };
+    _corners.bottomLeft = {
+        bottomLeft, calculateSpherePos(bottomLeft), _widthDir, _heightDir, _corners.topLeft.quadTreeLevel
+    };
+    _corners.bottomRight = {
+        bottomRight, calculateSpherePos(bottomRight), _widthDir, _heightDir, _corners.topLeft.quadTreeLevel
+    };
 
-    // Upper plane perpendicular with _center
-    _cornersUp[0] = _corners[0].spherePos + bendingDir;
-    _cornersUp[1] = _corners[1].spherePos + bendingDir;
-    _cornersUp[2] = _corners[2].spherePos + bendingDir;
-    _cornersUp[3] = _corners[3].spherePos + bendingDir;
-
-    // Add max height
-    _cornersUp[0] += glm::normalize(_corners[0].spherePos) * 20.0f;
-    _cornersUp[1] += glm::normalize(_corners[1].spherePos) * 20.0f;
-    _cornersUp[2] += glm::normalize(_corners[2].spherePos) * 20.0f;
-    _cornersUp[3] += glm::normalize(_corners[3].spherePos) * 20.0f;
+    calculateShapeAABB();
 }
 
 void QuadTree::update(Graphics::Camera& camera) {
@@ -340,10 +326,10 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
      uint32_t TRIndex = BLIndex + 4;
     {
         // TL
-        vertices.push_back(_children.topLeft->_corners[0]);
-        vertices.push_back(_children.topLeft->_corners[1]);
-        vertices.push_back(_children.topLeft->_corners[2]);
-        vertices.push_back(_children.topLeft->_corners[3]);
+        vertices.push_back(_children.topLeft->_corners.topLeft);
+        vertices.push_back(_children.topLeft->_corners.topRight);
+        vertices.push_back(_children.topLeft->_corners.bottomLeft);
+        vertices.push_back(_children.topLeft->_corners.bottomRight);
         if (!_children.topLeft->_split) {
             if (_children.topLeft->_neighbors.left) {
                 indices.push_back(TLIndex);
@@ -360,10 +346,10 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
         }
 
         // BR
-        vertices.push_back(_children.bottomRight->_corners[0]);
-        vertices.push_back(_children.bottomRight->_corners[1]);
-        vertices.push_back(_children.bottomRight->_corners[2]);
-        vertices.push_back(_children.bottomRight->_corners[3]);
+        vertices.push_back(_children.bottomRight->_corners.topLeft);
+        vertices.push_back(_children.bottomRight->_corners.topRight);
+        vertices.push_back(_children.bottomRight->_corners.bottomLeft);
+        vertices.push_back(_children.bottomRight->_corners.bottomRight);
         if (!_children.bottomRight->_split) {
             if (_children.bottomRight->_neighbors.bottom) {
                 indices.push_back(BRIndex);
@@ -386,10 +372,10 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
     */
     {
         // BL
-        vertices.push_back(_children.bottomLeft->_corners[0]);
-        vertices.push_back(_children.bottomLeft->_corners[1]);
-        vertices.push_back(_children.bottomLeft->_corners[2]);
-        vertices.push_back(_children.bottomLeft->_corners[3]);
+        vertices.push_back(_children.bottomLeft->_corners.topLeft);
+        vertices.push_back(_children.bottomLeft->_corners.topRight);
+        vertices.push_back(_children.bottomLeft->_corners.bottomLeft);
+        vertices.push_back(_children.bottomLeft->_corners.bottomRight);
         if (!_children.bottomLeft->_split) {
             if (_children.bottomLeft->_neighbors.left) {
                 indices.push_back(BLIndex);
@@ -404,10 +390,10 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
         }
 
         // TR
-        vertices.push_back(_children.topRight->_corners[0]);
-        vertices.push_back(_children.topRight->_corners[1]);
-        vertices.push_back(_children.topRight->_corners[2]);
-        vertices.push_back(_children.topRight->_corners[3]);
+        vertices.push_back(_children.topRight->_corners.topLeft);
+        vertices.push_back(_children.topRight->_corners.topRight);
+        vertices.push_back(_children.topRight->_corners.bottomLeft);
+        vertices.push_back(_children.topRight->_corners.bottomRight);
         if (!_children.topRight->_split) {
             if (_children.topRight->_neighbors.top) {
                 indices.push_back(TRIndex);
@@ -515,11 +501,79 @@ glm::vec3 QuadTree::calculateSpherePos(const glm::vec3& cubePos) {
     float y2 = pos.y * pos.y;
     float z2 = pos.z * pos.z;
 
-    pos.x = pos.x * sqrt(1.0 - (y2 * 0.5) - (z2 * 0.5) + ((y2 * z2) / 3.0));
-    pos.y = pos.y * sqrt(1.0 - (z2 * 0.5) - (x2 * 0.5) + ((z2 * x2) / 3.0));
-    pos.z = pos.z * sqrt(1.0 - (x2 * 0.5) - (y2 * 0.5) + ((x2 * y2) / 3.0));
+    pos.x = pos.x * sqrt(1.0f - (y2 * 0.5f) - (z2 * 0.5f) + ((y2 * z2) / 3.0f));
+    pos.y = pos.y * sqrt(1.0f - (z2 * 0.5f) - (x2 * 0.5f) + ((z2 * x2) / 3.0f));
+    pos.z = pos.z * sqrt(1.0f - (x2 * 0.5f) - (y2 * 0.5f) + ((x2 * y2) / 3.0f));
 
     return normalize(pos) * _planetSize;
+}
+
+void QuadTree::calculateShapeAABB() {
+    _shapeBox.corners.topLeft =_corners.topLeft.spherePos;
+    _shapeBox.corners.topRight =_corners.topRight.spherePos;
+    _shapeBox.corners.bottomLeft =_corners.bottomLeft.spherePos;
+    _shapeBox.corners.bottomRight =_corners.bottomRight.spherePos;
+
+    // Pad the left, right, top and bottom sides of AABB box because the sides are rounded
+    // We do it only for the level 0 because the shape difference error is low for higher levels
+    {
+        if (_level == 0) {
+            glm::vec3 sphereHeightDir = glm::normalize(_corners.topLeft.spherePos - _corners.bottomLeft.spherePos);
+            glm::vec3 sphereWidthDir = glm::normalize(_corners.topRight.spherePos - _corners.topLeft.spherePos);
+
+            // Top padding
+            glm::vec3 topMidle = calculateSpherePos((_corners.topLeft.cubePos + _corners.topRight.cubePos) / 2.0f);
+            glm::vec3 topRoundedHeight = (topMidle - _corners.topRight.spherePos) * sphereHeightDir;
+
+            // Bottom padding
+            glm::vec3 bottomMidle = calculateSpherePos((_corners.bottomLeft.cubePos + _corners.bottomRight.cubePos) / 2.0f);
+            glm::vec3 bottomRoundedHeight = (_corners.bottomRight.spherePos - bottomMidle) * -sphereHeightDir;
+
+            // Right padding
+            glm::vec3 rightMidle = calculateSpherePos((_corners.topRight.cubePos + _corners.bottomRight.cubePos) / 2.0f);
+            glm::vec3 rightRoundedHeight = (rightMidle - _corners.topRight.spherePos) * sphereWidthDir;
+
+            // Left padding
+            glm::vec3 leftMidle = calculateSpherePos((_corners.topLeft.cubePos + _corners.bottomLeft.cubePos) / 2.0f);
+            glm::vec3 leftRoundedHeight = (leftMidle - _corners.topLeft.spherePos) * sphereWidthDir;
+
+            // Add the paddings to the AABB box corners
+            _shapeBox.corners.topLeft += topRoundedHeight + leftRoundedHeight;
+            _shapeBox.corners.topRight += topRoundedHeight + rightRoundedHeight;
+            _shapeBox.corners.bottomLeft += bottomRoundedHeight + leftRoundedHeight;
+            _shapeBox.corners.bottomRight += bottomRoundedHeight + rightRoundedHeight;
+        }
+    }
+
+    // Calculate upper corners of AABB box
+    {
+        // Calculate vector between the non-bended center of the quad and the bended center
+        glm::vec3 nonBendedCenter = (_corners.topLeft.spherePos + _corners.topRight.spherePos + _corners.bottomLeft.spherePos + _corners.bottomRight.spherePos) / 4.0f;
+        glm::vec3 bendingDir = _center - nonBendedCenter;
+
+        // Add bending to the AABB box corners up
+        _shapeBox.cornersUp.topLeft = _shapeBox.corners.topLeft + bendingDir;
+        _shapeBox.cornersUp.topRight = _shapeBox.corners.topRight + bendingDir;
+        _shapeBox.cornersUp.bottomLeft = _shapeBox.corners.bottomLeft + bendingDir;
+        _shapeBox.cornersUp.bottomRight = _shapeBox.corners.bottomRight + bendingDir;
+    }
+
+    // Add max heightmap height to the AABB box upper corners
+    {
+        // Calculate the direction of the 4 corners
+        glm::vec3 topLeftDirection = glm::normalize(_corners.topLeft.spherePos);
+        glm::vec3 topRightDirection = glm::normalize(_corners.topRight.spherePos);
+        glm::vec3 bottomLeftDirection = glm::normalize(_corners.bottomLeft.spherePos);
+        glm::vec3 bottomRightDirection = glm::normalize(_corners.bottomRight.spherePos);
+
+        // TODO: Store maxHeight in planet and pass it to the shader
+        float maxHeight = 20.0f;
+        _shapeBox.cornersUp.topLeft += topLeftDirection * maxHeight;
+        _shapeBox.cornersUp.topRight += topRightDirection * maxHeight;
+        _shapeBox.cornersUp.bottomLeft += bottomLeftDirection * maxHeight;
+        _shapeBox.cornersUp.bottomRight += bottomRightDirection * maxHeight;
+    }
+
 }
 
 bool QuadTree::needSplit(const Graphics::Camera& camera) {
@@ -618,14 +672,14 @@ void QuadTree::merge() {
 bool QuadTree::isInsideFrustum(Graphics::Camera& camera) const {
     return camera.getFrustum().isShapeInside(
         {
-            _corners[0].spherePos,
-            _corners[1].spherePos,
-            _corners[2].spherePos,
-            _corners[3].spherePos,
-            _cornersUp[0],
-            _cornersUp[1],
-            _cornersUp[2],
-            _cornersUp[3]
+            _shapeBox.corners.topLeft,
+            _shapeBox.corners.topRight,
+            _shapeBox.corners.bottomLeft,
+            _shapeBox.corners.bottomRight,
+            _shapeBox.cornersUp.topLeft,
+            _shapeBox.cornersUp.topRight,
+            _shapeBox.cornersUp.bottomLeft,
+            _shapeBox.cornersUp.bottomRight
         }
     );
 }

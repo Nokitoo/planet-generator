@@ -71,6 +71,41 @@ private:
         QuadTree* bottom = nullptr;
     };
 
+    struct Corners {
+        Vertex topLeft;
+        Vertex topRight;
+        Vertex bottomLeft;
+        Vertex bottomRight;
+    };
+
+    // AABB box used for frustum culling
+    struct AABB {
+        // Correspond to QuadTree::Corners
+        // padded on left/right and top/bottom sides
+        // (Because the sides are rounded)
+        struct {
+            glm::vec3 topLeft;
+            glm::vec3 topRight;
+            glm::vec3 bottomLeft;
+            glm::vec3 bottomRight;
+        } corners;
+
+        // Is the same as AABB::corners
+        // except that the rounded shape bend is added
+        // to fill all the quadtree shape
+        //  |\          \ |
+        //  | \          \|
+        //  |  |    =>    |
+        //  | /          /|
+        //  |/          / |
+        struct {
+            glm::vec3 topLeft;
+            glm::vec3 topRight;
+            glm::vec3 bottomLeft;
+            glm::vec3 bottomRight;
+        } cornersUp;
+    };
+
 public:
     QuadTree(float size,
         const glm::vec3& pos,
@@ -104,6 +139,7 @@ private:
     void addChildrenVertices(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices);
 
     glm::vec3 calculateSpherePos(const glm::vec3& cubePos);
+    void calculateShapeAABB();
 
     bool needSplit(const Graphics::Camera& camera);
     void split();
@@ -122,9 +158,9 @@ private:
     glm::vec3 _heightDir;
     glm::vec3 _normal;
 
-    Vertex _corners[4];
+    Corners _corners;
     glm::vec3 _center;
-    glm::vec3 _cornersUp[4];
+    AABB _shapeBox;
 
     Face _face = Face::FRONT;
 

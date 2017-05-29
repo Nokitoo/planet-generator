@@ -23,9 +23,9 @@ bool Application::init() {
 
     float sphereSize = 100.0f;
 
-    _camera.setPos({0.0f, 0.0f, sphereSize * 1.5f});
+    _camera.setPos({sphereSize / 2.0f, 0.0f, sphereSize + 50.0f});
     _camera.lookAt({0.0f, 0.0f, 0.0f});
-    _camera.setNear(0.1f);
+    _camera.setNear(1.0f);
     _camera.setFar(1000.0f);
     _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
     _planets.push_back(std::make_unique<Core::SphereQuadTree>(sphereSize));
