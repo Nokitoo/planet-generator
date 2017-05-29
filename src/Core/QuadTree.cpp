@@ -670,17 +670,15 @@ void QuadTree::merge() {
 }
 
 bool QuadTree::isInsideFrustum(Graphics::Camera& camera) const {
-    return camera.getFrustum().isShapeInside(
-        {
-            _shapeBox.corners.topLeft,
-            _shapeBox.corners.topRight,
-            _shapeBox.corners.bottomLeft,
-            _shapeBox.corners.bottomRight,
-            _shapeBox.cornersUp.topLeft,
-            _shapeBox.cornersUp.topRight,
-            _shapeBox.cornersUp.bottomLeft,
-            _shapeBox.cornersUp.bottomRight
-        }
+    return camera.getFrustum().isAABBInside(
+        _shapeBox.corners.topLeft,
+        _shapeBox.corners.topRight,
+        _shapeBox.corners.bottomLeft,
+        _shapeBox.corners.bottomRight,
+        _shapeBox.cornersUp.topLeft,
+        _shapeBox.cornersUp.topRight,
+        _shapeBox.cornersUp.bottomLeft,
+        _shapeBox.cornersUp.bottomRight
     );
 }
 

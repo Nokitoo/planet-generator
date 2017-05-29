@@ -61,7 +61,16 @@ public:
         const glm::vec3& posC,
         const glm::vec3& posD
     ) const;
-    bool isShapeInside(const std::vector<glm::vec3>& pos) const;
+    bool isAABBInside(
+        const glm::vec3& posA,
+        const glm::vec3& posB,
+        const glm::vec3& posC,
+        const glm::vec3& posD,
+        const glm::vec3& posE,
+        const glm::vec3& posF,
+        const glm::vec3& posG,
+        const glm::vec3& posH
+    ) const;
 
 private:
     NearPlane _nearPlane;

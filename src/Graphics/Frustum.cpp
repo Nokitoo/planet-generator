@@ -107,17 +107,25 @@ bool Frustum::isPlaneInside(
     return true;
 }
 
-bool Frustum::isShapeInside(const std::vector<glm::vec3>& pos) const {
+bool Frustum::isAABBInside(
+    const glm::vec3& posA,
+    const glm::vec3& posB,
+    const glm::vec3& posC,
+    const glm::vec3& posD,
+    const glm::vec3& posE,
+    const glm::vec3& posF,
+    const glm::vec3& posG,
+    const glm::vec3& posH
+) const {
     for (auto& plane: _planes) {
-        bool inside = false;
-        for (const auto& pos_: pos) {
-            if (plane.second.signedDistance(pos_) >= 0) {
-                inside = true;
-                break;
-            }
-        }
-
-        if (!inside) {
+        if (plane.second.signedDistance(posA) < 0 &&
+            plane.second.signedDistance(posB) < 0 &&
+            plane.second.signedDistance(posC) < 0 &&
+            plane.second.signedDistance(posD) < 0 &&
+            plane.second.signedDistance(posE) < 0 &&
+            plane.second.signedDistance(posF) < 0 &&
+            plane.second.signedDistance(posG) < 0 &&
+            plane.second.signedDistance(posH) < 0) {
             return false;
         }
     }
