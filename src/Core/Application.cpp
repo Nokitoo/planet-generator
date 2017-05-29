@@ -96,12 +96,23 @@ bool Application::handleEvents() {
 }
 
 void Application::onFrame(float elapsedTime) {
-    for (auto& planet: _planets) {
-        planet->update(_camera);
+    // Display overlay window
+    {
+        ImGui::SetNextWindowPos(ImVec2(10,10));
+        if (!ImGui::Begin(
+            "Fixed Overlay",
+            nullptr,
+            ImVec2(0,0),
+            0.3f,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings
+        ))
+        {
+            ImGui::End();
+            return;
+        }
     }
 
-    updateCameraPosition(elapsedTime);
-
+    // Display FPS
     {
         static float totalElapsedTime = 0.0f;
         static int framesNb = 0;
@@ -116,21 +127,22 @@ void Application::onFrame(float elapsedTime) {
             framesNb = 0;
         }
 
-        ImGui::SetNextWindowPos(ImVec2(10,10));
-        if (!ImGui::Begin(
-            "Example: Fixed Overlay",
-            nullptr,
-            ImVec2(0,0),
-            0.3f,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings
-        ))
-        {
-            ImGui::End();
-            return;
-        }
         ImGui::Text("FPS: %.3f", round(fps * 100.0f) / 100.0f);
-        ImGui::End();
     }
+
+    // Update planets and display vertices count
+    for (uint32_t i = 0; i < _planets.size(); ++i) {
+        _planets[i]->update(_camera);
+        ImGui::Text(
+            "Planet %d vertices: %d (%d Kb)",
+            i,
+            _planets[i]->getBuffer().getVerticesNb(),
+            sizeof(QuadTree::Vertex) * _planets[i]->getBuffer().getVerticesNb() / 1000
+        );
+    }
+    ImGui::End();
+
+    updateCameraPosition(elapsedTime);
 }
 
 void Application::updateCameraPosition(float elapsedTime) {
