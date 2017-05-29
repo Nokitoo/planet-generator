@@ -58,6 +58,7 @@ private:
 private:
     SDL_Window* _window = nullptr;
     void* _glContext = nullptr;
+    bool _imguiInit = false;
 
     glm::ivec2  _size;
 

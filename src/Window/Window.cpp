@@ -1,9 +1,13 @@
 #include <iostream> // std::cerr
 
-#include <SDL.h> // SDL_Window
+#include <imgui.h> // Imgui functions
+#include <imgui_impl_sdl_gl3.h> // Imgui SDL abstraction functions
 #include <gl/glew.h> // OpenGL functions
+#include <SDL.h> // SDL_Window
 
 #include <Window/Window.hpp> // Window::Window
+
+#undef main
 
 namespace Window {
 
@@ -25,6 +29,10 @@ std::unique_ptr<Window> Window::create(const std::string& title, const glm::ivec
 bool Window::pollEvent(Event& event) {
     SDL_Event sdlEvent;
     if (SDL_PollEvent(&sdlEvent)) {
+        // Send event to imgui
+        ImGui_ImplSdlGL3_ProcessEvent(&sdlEvent);
+
+        // Handle events
         switch (sdlEvent.type) {
             case SDL_QUIT:
                 event.type = Event::Type::Close;
@@ -84,9 +92,13 @@ bool Window::pollEvent(Event& event) {
 void Window::beginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, _size.x, _size.y);
+
+    ImGui_ImplSdlGL3_NewFrame(_window);
 }
 
 void Window::endFrame() {
+    ImGui::Render();
+
     SDL_GL_SwapWindow(_window);
 }
 
@@ -179,7 +191,7 @@ bool Window::initOpenGL() {
     _glContext = SDL_GL_CreateContext(_window);
     if (_glContext == nullptr) {
         // TODO: replace this with logger
-        std::cerr << "Window::init: Can't create OpenGL context: " << SDL_GetError() << std::endl;
+        std::cerr << "Window::initOpenGL: Can't create OpenGL context: " << SDL_GetError() << std::endl;
         return false;
     }
 
@@ -188,7 +200,7 @@ bool Window::initOpenGL() {
     //Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {
         // TODO: replace this with logger
-        std::cerr << "Window::init: Can't init vsync: " << SDL_GetError() << std::endl;
+        std::cerr << "Window::initOpenGL: Can't init vsync: " << SDL_GetError() << std::endl;
         return false;
     }
 
@@ -196,13 +208,21 @@ bool Window::initOpenGL() {
     GLenum glewError = glewInit();
     if (glewError != GLEW_OK) {
         // TODO: replace this with logger
-        std::cerr << "Window::init: Can't init glew: " <<  glewGetErrorString(glewError) << std::endl;
+        std::cerr << "Window::initOpenGL: Can't init glew: " <<  glewGetErrorString(glewError) << std::endl;
         return false;
     }
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    return true;
+    // Setup imgui bindings
+    _imguiInit = ImGui_ImplSdlGL3_Init(_window);
+    if (!_imguiInit) {
+        // TODO: replace this with logger
+        std::cerr << "Window::initOpenGL: Can't init imgui bindings" << std::endl;
+        return false;
+    }
+
+    return SDL_TRUE;
 }
 
 void Window::initKeyStates() {
@@ -240,14 +260,16 @@ Mouse::Button Window::translateSDLMouseButton(int SDLButtonCode) {
 }
 
 void Window::destroy() {
+    if (_imguiInit) {
+        ImGui_ImplSdlGL3_Shutdown();
+    }
+
     if (_glContext != nullptr) {
         SDL_GL_DeleteContext(_glContext);
-        _glContext = nullptr;
     }
 
     if (_window != nullptr) {
         SDL_DestroyWindow(_window);
-        _window = nullptr;
     }
 
     SDL_Quit();

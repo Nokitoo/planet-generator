@@ -1,5 +1,6 @@
 #include <iostream> // std::cerr
 
+#include <imgui.h> // Imgui functions
 #include <glm/vec3.hpp> // glm::vec3
 
 #include <Core/Application.hpp> // Graphics::Core::Application
@@ -34,40 +35,9 @@ bool Application::init() {
 }
 
 bool Application::run() {
-    Graphics::Debug& debug = _renderer->getDebug();
     while (1) {
-        Window::Event event;
-
-        while (_window->pollEvent(event)) {
-            if (event.type == Window::Event::Type::Close ||
-                (event.type == Window::Event::Type::KeyPressed &&
-                    event.key.code == Window::Keyboard::Key::Escape)) {
-                return true;
-            }
-            if (event.type == Window::Event::Type::MouseMoved) {
-                updateCameraRotation(event);
-            }
-
-            if (event.type == Window::Event::Type::KeyPressed &&
-                event.key.code == Window::Keyboard::Key::M) {
-                debug.wireframeDisplayed(!debug.wireframeDisplayed());
-            }
-            if (event.type == Window::Event::Type::KeyPressed &&
-                event.key.code == Window::Keyboard::Key::N) {
-                debug.verticesNormalsDisplayed(!debug.verticesNormalsDisplayed());
-            }
-            if (event.type == Window::Event::Type::KeyPressed &&
-                event.key.code == Window::Keyboard::Key::B) {
-                debug.facesNormalsDisplayed(!debug.facesNormalsDisplayed());
-            }
-            if (event.type == Window::Event::Type::KeyPressed &&
-                event.key.code == Window::Keyboard::Key::L) {
-                _frustumLocked = !_frustumLocked;
-                _camera.lockFrustum(_frustumLocked);
-            }
-            if (event.type == Window::Event::Type::Resize) {
-                _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
-            }
+        if (!handleEvents()) {
+            break;
         }
 
         _window->beginFrame();
@@ -76,14 +46,58 @@ bool Application::run() {
         _window->endFrame();
     }
 
-    return false;
+    return true;
+}
+
+bool Application::handleEvents() {
+    Graphics::Debug& debug = _renderer->getDebug();
+    Window::Event event;
+
+    while (_window->pollEvent(event)) {
+        if (event.type == Window::Event::Type::Close ||
+            (event.type == Window::Event::Type::KeyPressed &&
+                event.key.code == Window::Keyboard::Key::Escape)) {
+            return false;
+        }
+        if (event.type == Window::Event::Type::MouseMoved) {
+            updateCameraRotation(event);
+        }
+
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::M) {
+            debug.wireframeDisplayed(!debug.wireframeDisplayed());
+        }
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::N) {
+            debug.verticesNormalsDisplayed(!debug.verticesNormalsDisplayed());
+        }
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::B) {
+            debug.facesNormalsDisplayed(!debug.facesNormalsDisplayed());
+        }
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::L) {
+            _frustumLocked = !_frustumLocked;
+            _camera.lockFrustum(_frustumLocked);
+        }
+        if (event.type == Window::Event::Type::Resize) {
+            _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
+        }
+    }
+
+    return true;
 }
 
 void Application::onFrame() {
     for (auto& planet: _planets) {
         planet->update(_camera);
     }
+
     updateCameraPosition();
+
+    {
+        ImGui::Text("Hello, world!");
+    }
 }
 
 void Application::updateCameraPosition() {

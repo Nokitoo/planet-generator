@@ -26,6 +26,7 @@ public:
     bool run();
 
 private:
+    bool handleEvents();
     void onFrame();
 
     void updateCameraPosition();
