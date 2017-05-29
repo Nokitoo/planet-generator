@@ -40,6 +40,8 @@ public:
 
     const glm::ivec2& getSize() const;
 
+    void sleep(float ms);
+
 private:
     // Only the Window::create can create the window
     Window() = default;

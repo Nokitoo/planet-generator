@@ -27,9 +27,9 @@ public:
 
 private:
     bool handleEvents();
-    void onFrame();
+    void onFrame(float elapsedTime);
 
-    void updateCameraPosition();
+    void updateCameraPosition(float elapsedTime);
     void updateCameraRotation(Window::Event& event);
 
 private:

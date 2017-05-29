@@ -198,11 +198,11 @@ bool Window::initOpenGL() {
     SDL_GL_MakeCurrent(_window, _glContext);
 
     //Use Vsync
-    if (SDL_GL_SetSwapInterval(1) < 0) {
+/*    if (SDL_GL_SetSwapInterval(1) < 0) {
         // TODO: replace this with logger
         std::cerr << "Window::initOpenGL: Can't init vsync: " << SDL_GetError() << std::endl;
         return false;
-    }
+    }*/
 
     // Init glew
     GLenum glewError = glewInit();
@@ -273,6 +273,10 @@ void Window::destroy() {
     }
 
     SDL_Quit();
+}
+
+void Window::sleep(float ms) {
+    SDL_Delay(ms);
 }
 
 } // Namespace Window

@@ -3,6 +3,8 @@
 #include <imgui.h> // Imgui functions
 #include <glm/vec3.hpp> // glm::vec3
 
+#include <System/Timer.hpp> // System::Timer
+
 #include <Core/Application.hpp> // Graphics::Core::Application
 
 namespace Core {
@@ -35,13 +37,18 @@ bool Application::init() {
 }
 
 bool Application::run() {
+    System::Timer timer;
+
     while (1) {
+        float elapsedTime = timer.getElapsedTime();
+        timer.reset();
+
         if (!handleEvents()) {
             break;
         }
 
         _window->beginFrame();
-        onFrame();
+        onFrame(elapsedTime);
         _renderer->render(_camera, _planets);
         _window->endFrame();
     }
@@ -88,39 +95,65 @@ bool Application::handleEvents() {
     return true;
 }
 
-void Application::onFrame() {
+void Application::onFrame(float elapsedTime) {
     for (auto& planet: _planets) {
         planet->update(_camera);
     }
 
-    updateCameraPosition();
+    updateCameraPosition(elapsedTime);
 
     {
-        ImGui::Text("Hello, world!");
+        static float totalElapsedTime = 0.0f;
+        static int framesNb = 0;
+        static float fps = 0.0f;
+
+        totalElapsedTime += elapsedTime;
+        ++framesNb;
+
+        if (totalElapsedTime >= 1.0f) {
+            fps = static_cast<float>(framesNb) / totalElapsedTime;
+            totalElapsedTime = 0.0f;
+            framesNb = 0;
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(10,10));
+        if (!ImGui::Begin(
+            "Example: Fixed Overlay",
+            nullptr,
+            ImVec2(0,0),
+            0.3f,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings
+        ))
+        {
+            ImGui::End();
+            return;
+        }
+        ImGui::Text("FPS: %.3f", round(fps * 100.0f) / 100.0f);
+        ImGui::End();
     }
 }
 
-void Application::updateCameraPosition() {
-    float moveSpeed = 1.0f;
+void Application::updateCameraPosition(float elapsedTime) {
+    float moveSpeed = 50.0f;
     glm::vec3 moveDirection;
 
     if (_window->isKeyPressed(Window::Keyboard::Key::Q)) {
-        moveDirection.x -= moveSpeed;
+        moveDirection.x -= moveSpeed * elapsedTime;
     }
     if (_window->isKeyPressed(Window::Keyboard::Key::D)) {
-        moveDirection.x += moveSpeed;
+        moveDirection.x += moveSpeed * elapsedTime;
     }
     if (_window->isKeyPressed(Window::Keyboard::Key::Z)) {
-        moveDirection.z -= moveSpeed;
+        moveDirection.z -= moveSpeed * elapsedTime;
     }
     if (_window->isKeyPressed(Window::Keyboard::Key::S)) {
-        moveDirection.z += moveSpeed;
+        moveDirection.z += moveSpeed * elapsedTime;
     }
     if (_window->isKeyPressed(Window::Keyboard::Key::LShift)) {
-        moveDirection.y -= moveSpeed;
+        moveDirection.y -= moveSpeed * elapsedTime;
     }
     if (_window->isKeyPressed(Window::Keyboard::Key::Space)) {
-        moveDirection.y += moveSpeed;
+        moveDirection.y += moveSpeed * elapsedTime;
     }
 
     _camera.translate(moveDirection);
