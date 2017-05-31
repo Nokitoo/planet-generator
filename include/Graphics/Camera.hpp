@@ -32,7 +32,8 @@ public:
     void  setFar(float far);
     void  setAspect(float far);
 
-    void lockFrustum(bool lock);
+    bool frustumLocked() const;
+    void frustumLocked(bool locked);
 
 private:
     void  updateProj();

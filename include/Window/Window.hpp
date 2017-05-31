@@ -40,6 +40,9 @@ public:
 
     const glm::ivec2& getSize() const;
 
+    bool relativeMouseModeEnabled() const;
+    void relativeMouseModeEnabled(bool enabled);
+
     void sleep(float ms);
 
 private:

@@ -29,6 +29,10 @@ private:
     bool handleEvents();
     void onFrame(float elapsedTime);
 
+    void displayOverlayWindow(float elapsedTime);
+    void displayCommandsWindow();
+    void displayDebugWindow();
+
     void updateCameraPosition(float elapsedTime);
     void updateCameraRotation(Window::Event& event);
 
@@ -39,8 +43,6 @@ private:
     std::vector<std::unique_ptr<Core::SphereQuadTree>> _planets;
 
     Graphics::Camera _camera;
-
-    bool _frustumLocked = false;
 };
 
 } // Namespace Core

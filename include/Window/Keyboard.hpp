@@ -39,6 +39,19 @@
     MACRO(Num8, SDLK_8)             \
     MACRO(Num9, SDLK_9)             \
                                     \
+    MACRO(F1, SDLK_F1)              \
+    MACRO(F2, SDLK_F2)              \
+    MACRO(F3, SDLK_F3)              \
+    MACRO(F4, SDLK_F4)              \
+    MACRO(F5, SDLK_F5)              \
+    MACRO(F6, SDLK_F6)              \
+    MACRO(F7, SDLK_F7)              \
+    MACRO(F8, SDLK_F8)              \
+    MACRO(F9, SDLK_F9)              \
+    MACRO(F10, SDLK_F10)            \
+    MACRO(F11, SDLK_F11)            \
+    MACRO(F12, SDLK_F12)            \
+                                    \
     MACRO(LControl, SDLK_LCTRL)     \
     MACRO(LShift, SDLK_LSHIFT)      \
     MACRO(LAlt, SDLK_LALT)          \

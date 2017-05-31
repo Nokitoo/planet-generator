@@ -68,24 +68,28 @@ bool Application::handleEvents() {
         if (event.type == Window::Event::Type::MouseMoved) {
             updateCameraRotation(event);
         }
+        if (event.type == Window::Event::Type::MousePressed &&
+            event.mouse.button == Window::Mouse::Button::Right) {
+            _window->relativeMouseModeEnabled(!_window->relativeMouseModeEnabled());
+        }
 
         if (event.type == Window::Event::Type::KeyPressed &&
-            event.key.code == Window::Keyboard::Key::M) {
-            debug.wireframeDisplayed(!debug.wireframeDisplayed());
-        }
-        if (event.type == Window::Event::Type::KeyPressed &&
-            event.key.code == Window::Keyboard::Key::N) {
+            event.key.code == Window::Keyboard::Key::F1) {
             debug.verticesNormalsDisplayed(!debug.verticesNormalsDisplayed());
         }
         if (event.type == Window::Event::Type::KeyPressed &&
-            event.key.code == Window::Keyboard::Key::B) {
+            event.key.code == Window::Keyboard::Key::F2) {
             debug.facesNormalsDisplayed(!debug.facesNormalsDisplayed());
         }
         if (event.type == Window::Event::Type::KeyPressed &&
-            event.key.code == Window::Keyboard::Key::L) {
-            _frustumLocked = !_frustumLocked;
-            _camera.lockFrustum(_frustumLocked);
+            event.key.code == Window::Keyboard::Key::F3) {
+            debug.wireframeDisplayed(!debug.wireframeDisplayed());
         }
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::F4) {
+            _camera.frustumLocked(!_camera.frustumLocked());
+        }
+
         if (event.type == Window::Event::Type::Resize) {
             _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
         }
@@ -95,15 +99,28 @@ bool Application::handleEvents() {
 }
 
 void Application::onFrame(float elapsedTime) {
+    for (auto& planet: _planets) {
+        planet->update(_camera);
+    }
+
+    displayOverlayWindow(elapsedTime);
+    displayCommandsWindow();
+    displayDebugWindow();
+
+    updateCameraPosition(elapsedTime);
+}
+
+void Application::displayOverlayWindow(float elapsedTime) {
     // Display overlay window
     {
-        ImGui::SetNextWindowPos(ImVec2(10,10));
+        ImGui::SetNextWindowSize(ImVec2(400, 50));
+        ImGui::SetNextWindowPos(ImVec2(10, 10));
         if (!ImGui::Begin(
             "Fixed Overlay",
             nullptr,
-            ImVec2(0,0),
+            ImVec2(0, 0),
             0.3f,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
         ))
         {
             ImGui::End();
@@ -129,9 +146,8 @@ void Application::onFrame(float elapsedTime) {
         ImGui::Text("FPS: %.3f", round(fps * 100.0f) / 100.0f);
     }
 
-    // Update planets and display vertices count
+    // Display planets vertices count
     for (uint32_t i = 0; i < _planets.size(); ++i) {
-        _planets[i]->update(_camera);
         ImGui::Text(
             "Planet %d vertices: %d (%d Kb)",
             i,
@@ -139,9 +155,61 @@ void Application::onFrame(float elapsedTime) {
             sizeof(QuadTree::Vertex) * _planets[i]->getBuffer().getVerticesNb() / 1000
         );
     }
-    ImGui::End();
 
-    updateCameraPosition(elapsedTime);
+    ImGui::End();
+}
+
+void Application::displayCommandsWindow() {
+    // Display overlay window
+    {
+        ImGui::SetNextWindowSize(ImVec2(400, 100));
+        ImGui::SetNextWindowPos(ImVec2(10, 70));
+        if (!ImGui::Begin(
+            "Commands",
+            nullptr,
+            ImVec2(0, 0),
+            0.3f,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
+        ))
+        {
+            ImGui::End();
+            return;
+        }
+    }
+
+    ImGui::Text("Commands:");
+    ImGui::Text("Z,Q,S,D: Move front,left,back,right");
+    ImGui::Text("Space,Left Shift: Move up/down");
+    ImGui::Text("Hold Left Control: Increase move speed");
+    ImGui::Text("Right mouse click: Toggle mouse mode");
+    ImGui::End();
+}
+
+void Application::displayDebugWindow() {
+    ImGui::SetNextWindowPos(ImVec2(10, 230), ImGuiSetCond_FirstUseEver);
+    if (!ImGui::Begin("Debug##Display", nullptr, ImVec2(0, 0)))
+    {
+        ImGui::End();
+        return;
+    }
+
+    bool verticesNormalsDisplayed = _renderer->getDebug().verticesNormalsDisplayed();
+    ImGui::Checkbox("Vertices normals (F1)", &verticesNormalsDisplayed);
+    _renderer->getDebug().verticesNormalsDisplayed(verticesNormalsDisplayed);
+
+    bool facesNormalsDisplayed = _renderer->getDebug().facesNormalsDisplayed();
+    ImGui::Checkbox("Faces normals (F2)", &facesNormalsDisplayed);
+    _renderer->getDebug().facesNormalsDisplayed(facesNormalsDisplayed);
+
+    bool wireframeDisplayed = _renderer->getDebug().wireframeDisplayed();
+    ImGui::Checkbox("Wireframe (F3)", &wireframeDisplayed);
+    _renderer->getDebug().wireframeDisplayed(wireframeDisplayed);
+
+    bool frustumLocked = _camera.frustumLocked();
+    ImGui::Checkbox("Frustum locked (F4)", &frustumLocked);
+    _camera.frustumLocked(frustumLocked);
+
+    ImGui::End();
 }
 
 void Application::updateCameraPosition(float elapsedTime) {
@@ -175,15 +243,19 @@ void Application::updateCameraPosition(float elapsedTime) {
 }
 
 void Application::updateCameraRotation(Window::Event& event) {
+    if (!_window->relativeMouseModeEnabled()) {
+        return;
+    }
+
     float rotationSpeed = 0.5f;
     _camera.rotate(
-            glm::radians(rotationSpeed),
-            {
-                event.mouse.moveOffset.y,
-                event.mouse.moveOffset.x,
-                0.0f
-            }
-        );
+        glm::radians(rotationSpeed),
+        {
+            event.mouse.moveOffset.y,
+            event.mouse.moveOffset.x,
+            0.0f
+        }
+    );
 }
 
 } // Namespace Core

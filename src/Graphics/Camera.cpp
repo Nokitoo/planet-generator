@@ -111,8 +111,12 @@ void Camera::setAspect(float aspect) {
     isDirty(true);
 }
 
-void Camera::lockFrustum(bool lock) {
-    _frustumLocked = lock;
+bool Camera::frustumLocked() const {
+    return _frustumLocked;
+}
+
+void Camera::frustumLocked(bool locked) {
+    _frustumLocked = locked;
 
     if (!_frustumLocked) {
         isDirty(true);

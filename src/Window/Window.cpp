@@ -177,13 +177,19 @@ bool Window::init(const std::string& title, const glm::ivec2& pos, const glm::iv
     Event event;
     while (pollEvent(event)) {}
 
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-
     return initOpenGL();
 }
 
 const glm::ivec2& Window::getSize() const {
     return _size;
+}
+
+bool Window::relativeMouseModeEnabled() const {
+    return SDL_GetRelativeMouseMode();
+}
+
+void Window::relativeMouseModeEnabled(bool enabled) {
+    SDL_SetRelativeMouseMode(enabled ? SDL_TRUE : SDL_FALSE);
 }
 
 bool Window::initOpenGL() {
