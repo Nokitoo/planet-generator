@@ -4,33 +4,54 @@
 
 namespace Graphics {
 
+Transform::Transform() {
+    _forward = _worldForward;
+    _right = _worldRight;
+    _up = _worldUp;
+}
+
 Transform::Transform(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _localForward = camera._localForward;
-    _localRight = camera._localRight;
-    _localUp = camera._localUp;
+    _worldForward = camera._worldForward;
+    _worldRight = camera._worldRight;
+    _worldUp = camera._worldUp;
+    _forward = camera._forward;
+    _right = camera._right;
+    _up = camera._up;
     isDirty(true);
 }
 
 Transform::Transform(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _localForward = camera._localForward;
-    _localRight = camera._localRight;
-    _localUp = camera._localUp;
+    _worldForward = camera._worldForward;
+    _worldRight = camera._worldRight;
+    _worldUp = camera._worldUp;
+    _forward = camera._forward;
+    _right = camera._right;
+    _up = camera._up;
     isDirty(true);
 
     camera._pos = {};
     camera._orientation = {};
+    camera._worldForward = {};
+    camera._worldRight = {};
+    camera._worldUp = {};
+    camera._forward = {};
+    camera._right = {};
+    camera._up = {};
 }
 
 Transform& Transform::operator=(const Transform& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _localForward = camera._localForward;
-    _localRight = camera._localRight;
-    _localUp = camera._localUp;
+    _worldForward = camera._worldForward;
+    _worldRight = camera._worldRight;
+    _worldUp = camera._worldUp;
+    _forward = camera._forward;
+    _right = camera._right;
+    _up = camera._up;
     isDirty(true);
 
     return *this;
@@ -39,13 +60,22 @@ Transform& Transform::operator=(const Transform& camera) {
 Transform& Transform::operator=(Transform&& camera) {
     _pos = camera._pos;
     _orientation = camera._orientation;
-    _localForward = camera._localForward;
-    _localRight = camera._localRight;
-    _localUp = camera._localUp;
+    _worldForward = camera._worldForward;
+    _worldRight = camera._worldRight;
+    _worldUp = camera._worldUp;
+    _forward = camera._forward;
+    _right = camera._right;
+    _up = camera._up;
     isDirty(true);
 
     camera._pos = {};
     camera._orientation = {};
+    camera._worldForward = {};
+    camera._worldRight = {};
+    camera._worldUp = {};
+    camera._forward = {};
+    camera._right = {};
+    camera._up = {};
 
     return *this;
 }
@@ -58,8 +88,8 @@ const glm::quat& Transform::getOrientation() const {
     return _orientation;
 }
 
-const glm::vec3& Transform::getDir() const {
-    return _dir;
+const glm::vec3& Transform::getForward() const {
+    return _forward;
 }
 
 const glm::vec3& Transform::getRight() const {
@@ -85,7 +115,7 @@ void Transform::isDirty(bool dirty) {
 // Calculations from http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
 void Transform::lookAt(const glm::vec3& pos) {
     glm::vec3 u = glm::normalize(pos - _pos);
-    glm::vec3 v = _localForward;
+    glm::vec3 v = _worldForward;
 
     float normUNormV = sqrt(glm::dot(u, u) * glm::dot(v, v));
     float realPart = normUNormV + glm::dot(u, v);
@@ -107,9 +137,9 @@ void Transform::lookAt(const glm::vec3& pos) {
     }
 
     _orientation = glm::normalize(glm::quat(realPart, w.x, w.y, w.z));
-    _dir = glm::normalize(_localForward * _orientation);
-    _right = glm::normalize(_localRight * _orientation);
-    _up = glm::normalize(_localUp * _orientation);
+    _forward = glm::normalize(_worldForward * _orientation);
+    _right = glm::normalize(_worldRight * _orientation);
+    _up = glm::normalize(_worldUp * _orientation);
 
     isDirty(true);
 }
@@ -128,14 +158,14 @@ void Transform::rotate(float amount, const glm::vec3& axis) {
         return;
     }
 
-    glm::quat pitch = glm::angleAxis(axis.x * amount, _localRight);
-    glm::quat yaw = glm::angleAxis(axis.y * amount, _localUp);
+    glm::quat pitch = glm::angleAxis(axis.x * amount, _worldRight);
+    glm::quat yaw = glm::angleAxis(axis.y * amount, _worldUp);
 
     _orientation = glm::normalize(pitch * _orientation * yaw);
 
-    _dir = glm::normalize(_localForward * _orientation);
-    _right = glm::normalize(_localRight * _orientation);
-    _up = glm::normalize(_localUp * _orientation);
+    _forward = glm::normalize(_worldForward * _orientation);
+    _right = glm::normalize(_worldRight * _orientation);
+    _up = glm::normalize(_worldUp * _orientation);
 
     isDirty(true);
 }

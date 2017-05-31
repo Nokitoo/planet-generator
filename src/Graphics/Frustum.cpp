@@ -50,12 +50,12 @@ void Frustum::update(const Camera& camera) {
     _farPlane.height = 2.0f * tan(fov / 2.0f) * _farPlane.distance;
     _farPlane.width = _farPlane.height * camera.getAspect();
 
-    _planes[PlaneOrientation::FRONT].point = camera.getPos() + (camera.getDir() * _nearPlane.distance);
-    _planes[PlaneOrientation::FRONT].normal = camera.getDir();
+    _planes[PlaneOrientation::FRONT].point = camera.getPos() + (camera.getForward() * _nearPlane.distance);
+    _planes[PlaneOrientation::FRONT].normal = camera.getForward();
     _planes[PlaneOrientation::FRONT].d = -glm::dot(_planes[PlaneOrientation::FRONT].normal, _planes[PlaneOrientation::FRONT].point);
 
-    _planes[PlaneOrientation::BACK].point = camera.getPos() + (camera.getDir() * _farPlane.distance);
-    _planes[PlaneOrientation::BACK].normal = -camera.getDir();
+    _planes[PlaneOrientation::BACK].point = camera.getPos() + (camera.getForward() * _farPlane.distance);
+    _planes[PlaneOrientation::BACK].normal = -camera.getForward();
     _planes[PlaneOrientation::BACK].d = -glm::dot(_planes[PlaneOrientation::BACK].normal, _planes[PlaneOrientation::BACK].point);
 
     _planes[PlaneOrientation::TOP].point = _planes[PlaneOrientation::FRONT].point + (camera.getUp() * (_nearPlane.height / 2.0f));

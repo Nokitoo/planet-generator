@@ -8,7 +8,7 @@ namespace Graphics {
 class Transform
 {
 public:
-    Transform() = default;
+    Transform();
     virtual ~Transform() = default;
 
     Transform(const Transform& transform);
@@ -19,7 +19,7 @@ public:
 
     const glm::vec3& getPos() const;
     const glm::quat& getOrientation() const;
-    const glm::vec3& getDir() const;
+    const glm::vec3& getForward() const;
     const glm::vec3& getRight() const;
     const glm::vec3& getUp() const;
     bool isDirty() const;
@@ -33,12 +33,13 @@ public:
 
 private:
     glm::vec3 _pos;
-    glm::vec3 _localForward = {0.0f, 0.0f, -1.0f};
-    glm::vec3 _localRight = {1.0f, 0.0f, 0.0f};
-    glm::vec3 _localUp = {0.0f, 1.0f, 0.0f};
     glm::quat _orientation;
 
-    glm::vec3 _dir;
+    glm::vec3 _worldForward = {0.0f, 0.0f, -1.0f};
+    glm::vec3 _worldRight = {1.0f, 0.0f, 0.0f};
+    glm::vec3 _worldUp = {0.0f, 1.0f, 0.0f};
+
+    glm::vec3 _forward;
     glm::vec3 _right;
     glm::vec3 _up;
 
