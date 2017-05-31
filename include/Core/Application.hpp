@@ -32,6 +32,7 @@ private:
     void displayOverlayWindow(float elapsedTime);
     void displayCommandsWindow();
     void displayDebugWindow();
+    void displayEditorWindow();
 
     void updateCameraPosition(float elapsedTime);
     void updateCameraRotation(Window::Event& event);

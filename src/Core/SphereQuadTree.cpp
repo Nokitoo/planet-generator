@@ -234,6 +234,10 @@ const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
     return _heightMap;
 }
 
+void SphereQuadTree::setMaxHeight(float maxHeight) {
+    _maxHeight = maxHeight;
+}
+
 bool SphereQuadTree::initHeightMap() {
     Graphics::API::Builder::Texture textureBuilder;
 

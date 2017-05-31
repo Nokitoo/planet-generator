@@ -107,6 +107,7 @@ void Application::onFrame(float elapsedTime) {
     displayOverlayWindow(elapsedTime);
     displayCommandsWindow();
     displayDebugWindow();
+    displayEditorWindow();
 
     updateCameraPosition(elapsedTime);
 }
@@ -188,6 +189,7 @@ void Application::displayCommandsWindow() {
 
 void Application::displayDebugWindow() {
     ImGui::SetNextWindowPos(ImVec2(10, 230), ImGuiSetCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200, 150), ImGuiSetCond_FirstUseEver);
     if (!ImGui::Begin("Debug##Display", nullptr, ImVec2(0, 0)))
     {
         ImGui::End();
@@ -195,20 +197,49 @@ void Application::displayDebugWindow() {
     }
 
     bool verticesNormalsDisplayed = _renderer->getDebug().verticesNormalsDisplayed();
-    ImGui::Checkbox("Vertices normals (F1)", &verticesNormalsDisplayed);
-    _renderer->getDebug().verticesNormalsDisplayed(verticesNormalsDisplayed);
+    if (ImGui::Checkbox("Vertices normals (F1)", &verticesNormalsDisplayed)) {
+        _renderer->getDebug().verticesNormalsDisplayed(verticesNormalsDisplayed);
+    }
 
     bool facesNormalsDisplayed = _renderer->getDebug().facesNormalsDisplayed();
-    ImGui::Checkbox("Faces normals (F2)", &facesNormalsDisplayed);
-    _renderer->getDebug().facesNormalsDisplayed(facesNormalsDisplayed);
+    if (ImGui::Checkbox("Faces normals (F2)", &facesNormalsDisplayed)) {
+        _renderer->getDebug().facesNormalsDisplayed(facesNormalsDisplayed);
+    }
 
     bool wireframeDisplayed = _renderer->getDebug().wireframeDisplayed();
-    ImGui::Checkbox("Wireframe (F3)", &wireframeDisplayed);
-    _renderer->getDebug().wireframeDisplayed(wireframeDisplayed);
+    if (ImGui::Checkbox("Wireframe (F3)", &wireframeDisplayed)) {
+        _renderer->getDebug().wireframeDisplayed(wireframeDisplayed);
+    }
 
     bool frustumLocked = _camera.frustumLocked();
-    ImGui::Checkbox("Frustum locked (F4)", &frustumLocked);
-    _camera.frustumLocked(frustumLocked);
+    if (ImGui::Checkbox("Frustum locked (F4)", &frustumLocked)) {
+        _camera.frustumLocked(frustumLocked);
+    }
+
+    ImGui::End();
+}
+
+void Application::displayEditorWindow() {
+    if (!_planets.size()) {
+        return;
+    }
+
+    ImGui::SetNextWindowPos(ImVec2(10, 400), ImGuiSetCond_FirstUseEver);
+    if (!ImGui::Begin("Editor", nullptr, ImVec2(0, 0)))
+    {
+        ImGui::End();
+        return;
+    }
+
+    // TODO: Editor multiple planets
+    auto& planet = _planets.front();
+
+    float maxHeight = planet->getMaxHeight();
+    ImGui::PushItemWidth(200);
+    if (ImGui::SliderFloat("Max height", &maxHeight, 0.0f, 500.0f, "%.0f")) {
+        planet->setMaxHeight(maxHeight);
+    }
+    ImGui::PopItemWidth();
 
     ImGui::End();
 }

@@ -31,6 +31,8 @@ public:
     const QuadTree::LevelsTable& getLevelsTable() const;
     const Graphics::API::Texture& getHeightMap() const;
 
+    void setMaxHeight(float maxHeight);
+
 private:
     bool initHeightMap();
     void initLevelsDistance();
