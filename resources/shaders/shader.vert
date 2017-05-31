@@ -16,7 +16,7 @@ uniform mat4 proj;
 uniform float planetSize;
 uniform samplerCube heightMap;
 
-uniform float heightStrength = 20.0;
+uniform float maxHeight;
 
 // Formulas: http://mathproofs.blogspot.kr/2005/07/mapping-cube-to-sphere.html
 vec3 mapCubeToSphere(vec3 pos)
@@ -35,7 +35,7 @@ vec3 mapCubeToSphere(vec3 pos)
 float getHeight(vec3 heightMapCoord) {
     vec4 heightMapValue = texture(heightMap, heightMapCoord);
 
-    return heightMapValue.r * heightStrength;
+    return heightMapValue.r * maxHeight;
 }
 
 vec3 getNormalizedCubeCoord(vec3 worldCubeCoord) {

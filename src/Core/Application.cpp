@@ -24,13 +24,14 @@ bool Application::init() {
         return false;
     }
 
-    float sphereSize = 100.0f;
+    float planetSize = 100.0f;
+    float planetMaxHeight = 20.0f;
 
-    _camera.setPos({0.0f, 0.0f, sphereSize + 50.0f});
+    _camera.setPos({0.0f, 0.0f, planetSize + 50.0f});
     _camera.setNear(1.0f);
     _camera.setFar(5000.0f);
     _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
-    _planets.push_back(std::make_unique<Core::SphereQuadTree>(sphereSize));
+    _planets.push_back(std::make_unique<Core::SphereQuadTree>(planetSize, planetMaxHeight));
 
     return true;
 }

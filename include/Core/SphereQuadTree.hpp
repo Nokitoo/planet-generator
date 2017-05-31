@@ -8,14 +8,13 @@
 #include <Core/QuadTree.hpp> // Core::QuadTree
 #include <Graphics/Camera.hpp> // Graphics::Camera
 #include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
-#include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 #include <Graphics/API/Texture.hpp> // Graphics::API::Texture
 
 namespace Core {
 
 class SphereQuadTree {
 public:
-    SphereQuadTree(float size);
+    SphereQuadTree(float size, float maxHeight);
     ~SphereQuadTree() = default;
 
     SphereQuadTree(const SphereQuadTree& quadTree) = delete;
@@ -26,8 +25,9 @@ public:
 
     void update(Graphics::Camera& camera);
 
-    const Graphics::API::Buffer& getBuffer() const;
     float getSize() const;
+    float getMaxHeight() const;
+    const Graphics::API::Buffer& getBuffer() const;
     const QuadTree::LevelsTable& getLevelsTable() const;
     const Graphics::API::Texture& getHeightMap() const;
 
@@ -37,6 +37,9 @@ private:
     void initBufferBuilder();
 
 private:
+    float _size = 0.0f;
+    float _maxHeight = 0.0f;
+
     std::unique_ptr<QuadTree> _leftQuadTree = nullptr;
     std::unique_ptr<QuadTree> _rightQuadTree = nullptr;
     std::unique_ptr<QuadTree> _frontQuadTree = nullptr;
@@ -44,9 +47,8 @@ private:
     std::unique_ptr<QuadTree> _topQuadTree = nullptr;
     std::unique_ptr<QuadTree> _bottomQuadTree = nullptr;
 
-    Graphics::API::Builder::Buffer _bufferBuilder;
+    // Buffer storing vertices and indices
     Graphics::API::Buffer _buffer;
-    float _size = 0;
 
     // Store distance needed for each level
     QuadTree::LevelsTable _levelsTable;

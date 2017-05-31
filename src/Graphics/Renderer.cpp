@@ -64,6 +64,7 @@ void Renderer::renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, 
 
     for (const auto& planet: planets) {
         glUniform1f(shaderProgram.getUniformLocation("planetSize"), planet->getSize());
+        glUniform1f(shaderProgram.getUniformLocation("maxHeight"), planet->getMaxHeight());
         planet->getBuffer().bind();
         planet->getHeightMap().bind();
         glDrawElements(

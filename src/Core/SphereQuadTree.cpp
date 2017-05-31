@@ -1,5 +1,6 @@
 #include <iostream> // std::cerr
 
+#include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 #include <Graphics/API/Builder/Texture.hpp> // Graphics::API::Builder::Texture
 #include <System/Vector.hpp> // System::Vector
 
@@ -7,7 +8,7 @@
 
 namespace Core {
 
-SphereQuadTree::SphereQuadTree(float size): _size(size) {
+SphereQuadTree::SphereQuadTree(float size, float maxHeight): _size(size), _maxHeight(maxHeight) {
     // Center cube
     glm::vec3 baseOffset = {
         -_size / 2.0f,
@@ -140,6 +141,7 @@ SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
 
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
+    _maxHeight = quadTree._maxHeight;
 }
 
 SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
@@ -164,6 +166,7 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
 
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
+    _maxHeight = quadTree._maxHeight;
 
     return *this;
 }
@@ -211,12 +214,16 @@ void SphereQuadTree::update(Graphics::Camera& camera) {
         );
 }
 
-const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
-    return _buffer;
-}
-
 float SphereQuadTree::getSize() const {
     return (_size);
+}
+
+float SphereQuadTree::getMaxHeight() const {
+    return (_maxHeight);
+}
+
+const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
+    return _buffer;
 }
 
 const QuadTree::LevelsTable& SphereQuadTree::getLevelsTable() const {
@@ -270,8 +277,10 @@ void SphereQuadTree::initLevelsDistance() {
 }
 
 void SphereQuadTree::initBufferBuilder() {
+    Graphics::API::Builder::Buffer bufferBuilder;
+
     // Cube position attribute
-    _bufferBuilder.addAttribute({
+    bufferBuilder.addAttribute({
         0,
         3,
         GL_FLOAT,
@@ -280,7 +289,7 @@ void SphereQuadTree::initBufferBuilder() {
         offsetof(QuadTree::Vertex, cubePos)
     });
     // Sphere position attribute
-    _bufferBuilder.addAttribute({
+    bufferBuilder.addAttribute({
         1,
         3,
         GL_FLOAT,
@@ -289,7 +298,7 @@ void SphereQuadTree::initBufferBuilder() {
         offsetof(QuadTree::Vertex, spherePos)
     });
     // Width direction attribute
-    _bufferBuilder.addAttribute({
+    bufferBuilder.addAttribute({
         2,
         3,
         GL_FLOAT,
@@ -298,7 +307,7 @@ void SphereQuadTree::initBufferBuilder() {
         offsetof(QuadTree::Vertex, widthDir)
     });
     // Height direction attribute
-    _bufferBuilder.addAttribute({
+    bufferBuilder.addAttribute({
         3,
         3,
         GL_FLOAT,
@@ -307,7 +316,7 @@ void SphereQuadTree::initBufferBuilder() {
         offsetof(QuadTree::Vertex, heightDir)
     });
     // QuadTree level attribute
-    _bufferBuilder.addAttribute({
+    bufferBuilder.addAttribute({
         4,
         1,
         GL_FLOAT,
@@ -316,10 +325,10 @@ void SphereQuadTree::initBufferBuilder() {
         offsetof(QuadTree::Vertex, quadTreeLevel)
     });
 
-    _bufferBuilder.setVerticesUsage(GL_DYNAMIC_DRAW);
-    _bufferBuilder.setIndicesUsage(GL_DYNAMIC_DRAW);
+    bufferBuilder.setVerticesUsage(GL_DYNAMIC_DRAW);
+    bufferBuilder.setIndicesUsage(GL_DYNAMIC_DRAW);
 
-    if (!_bufferBuilder.build(_buffer)) {
+    if (!bufferBuilder.build(_buffer)) {
         // TODO: replace this with logger
         std::cerr << "SphereQuadTree::initBufferBuilder: failed to create VAO" << std::endl;
         // TODO return bool
