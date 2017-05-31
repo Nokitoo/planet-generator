@@ -1,18 +1,22 @@
 #include <iostream>
+
+#include <Core/SphereQuadTree.hpp> // Graphics::Core::SphereQuadTree
+
 #include <Core/QuadTree.hpp> // Graphics::Core::QuadTree
 
 namespace Core {
 
-QuadTree::QuadTree(float size,
-                    const glm::vec3& pos,
-                    const glm::vec3& widthDir,
-                    const glm::vec3& heightDir,
-                    const glm::vec3& normal,
-                    Face face,
-                    const LevelsTable& levelsTable,
-                    uint32_t level,
-                    float planetSize):
-    _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal), _face(face), _levelsTable(levelsTable), _level(level), _planetSize(planetSize) {
+QuadTree::QuadTree(
+    const SphereQuadTree& planet,
+    Face face,
+    uint32_t level,
+    float size,
+    const glm::vec3& pos,
+    const glm::vec3& widthDir,
+    const glm::vec3& heightDir,
+    const glm::vec3& normal
+): _planet(planet), _face(face), _level(level), _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal)
+{
     glm::vec3 topLeft = pos + (heightDir * size);
     glm::vec3 topRight = pos + (widthDir * size) + (heightDir * size);
     glm::vec3 bottomLeft = pos;
@@ -495,7 +499,7 @@ static glm::vec3 getNormalizedCubeCoord(glm::vec3 worldCubeCoord, float planetSi
 glm::vec3 QuadTree::calculateSpherePos(const glm::vec3& cubePos) {
     // Map cube position [-1.0, 1.0] to sphere position [-1.0, 1.0]
     // and scale [-1.0, 1.0] sphere position to planet scale
-    glm::vec3 pos = getNormalizedCubeCoord(cubePos, _planetSize);
+    glm::vec3 pos = getNormalizedCubeCoord(cubePos, _planet.getSize());
 
     float x2 = pos.x * pos.x;
     float y2 = pos.y * pos.y;
@@ -505,7 +509,7 @@ glm::vec3 QuadTree::calculateSpherePos(const glm::vec3& cubePos) {
     pos.y = pos.y * sqrt(1.0f - (z2 * 0.5f) - (x2 * 0.5f) + ((z2 * x2) / 3.0f));
     pos.z = pos.z * sqrt(1.0f - (x2 * 0.5f) - (y2 * 0.5f) + ((x2 * y2) / 3.0f));
 
-    return normalize(pos) * _planetSize;
+    return normalize(pos) * _planet.getSize();
 }
 
 void QuadTree::calculateShapeAABB() {
@@ -580,55 +584,52 @@ bool QuadTree::needSplit(const Graphics::Camera& camera) {
     float distance = glm::distance(camera.getPos(), _center);
 
     return !_split &&
-    _level < _levelsTable.size() &&
-    distance < _levelsTable[_level];
+    _level < _planet.getLevelsTable().size() &&
+    distance < _planet.getLevelsTable()[_level];
 }
 
 void QuadTree::split() {
     float childrenSize = _size / 2;
+
     _children.topLeft = std::make_unique<QuadTree>(
+        _planet,
+        _face,
+        _level + 1,
         childrenSize,
         _pos + (_heightDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal,
-        _face,
-        _levelsTable,
-        _level + 1,
-        _planetSize
+        _normal
         );
     _children.topRight = std::make_unique<QuadTree>(
+        _planet,
+        _face,
+        _level + 1,
         childrenSize,
         _pos + (_widthDir * childrenSize) + (_heightDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal,
-        _face,
-        _levelsTable,
-        _level + 1,
-        _planetSize
+        _normal
         );
     _children.bottomLeft = std::make_unique<QuadTree>(
+        _planet,
+        _face,
+        _level + 1,
         childrenSize,
         _pos,
         _widthDir,
         _heightDir,
-        _normal,
-        _face,
-        _levelsTable,
-        _level + 1,
-        _planetSize
+        _normal
         );
     _children.bottomRight = std::make_unique<QuadTree>(
+        _planet,
+        _face,
+        _level + 1,
         childrenSize,
         _pos + (_widthDir * childrenSize),
         _widthDir,
         _heightDir,
-        _normal,
-        _face,
-        _levelsTable,
-        _level + 1,
-        _planetSize
+        _normal
         );
 
     _split = true;
@@ -641,7 +642,7 @@ bool QuadTree::needMerge(const Graphics::Camera& camera) {
 
     return _split &&
     _level >= 0 &&
-    distance > _levelsTable[_level];
+    distance > _planet.getLevelsTable()[_level];
 }
 
 void QuadTree::merge() {
@@ -690,7 +691,7 @@ bool isBeyondHorizon(const glm::vec3& viewPos, const glm::vec3& planetCenterDir,
 }
 
 bool QuadTree::isOccludedByHorizon(const Graphics::Camera& camera) const {
-    float planetHalfSize = _planetSize / 2.0f;
+    float planetHalfSize = _planet.getSize() / 2.0f;
     glm::vec3 viewPos = camera.getPos() / planetHalfSize;
     glm::vec3 planetCenterDir = -viewPos;
 

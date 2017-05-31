@@ -16,71 +16,65 @@ SphereQuadTree::SphereQuadTree(float size): _size(size) {
     };
 
     _leftQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::LEFT, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(0.0f, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(0.0f, 0.0f, 1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(-1.0f, 0.0f, 0.0f), // Normal
-        QuadTree::Face::LEFT,
-        _levelsTable,
-        0,
-        _size
-        );
+        glm::vec3(-1.0f, 0.0f, 0.0f) // Normal
+    );
     _rightQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::RIGHT, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(_size, 0.0f, 0.0f) + baseOffset, // Position
         glm::vec3(0.0f, 0.0f, -1.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(1.0f, 0.0f, 0.0f), // Normal
-        QuadTree::Face::RIGHT,
-        _levelsTable,
-        0,
-        _size
-        );
+        glm::vec3(1.0f, 0.0f, 0.0f) // Normal
+    );
     _frontQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::FRONT, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(0.0f) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(0.0f, 0.0f, 1.0f), // Normal
-        QuadTree::Face::FRONT,
-        _levelsTable,
-        0,
-        _size
+        glm::vec3(0.0f, 0.0f, 1.0f) // Normal
         );
     _backQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::BACK, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(_size, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(-1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 1.0f, 0.0f), // Height direction
-        glm::vec3(0.0f, 0.0f, -1.0f), // Normal
-        QuadTree::Face::BACK,
-        _levelsTable,
-        0,
-        _size
-        );
+        glm::vec3(0.0f, 0.0f, -1.0f) // Normal
+    );
     _topQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::TOP, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(0.0f, _size, 0.0f) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, -1.0f), // Height direction
-        glm::vec3(0.0f, 1.0f, 0.0f), // Normal
-        QuadTree::Face::TOP,
-        _levelsTable,
-        0,
-        _size
-        );
+        glm::vec3(0.0f, 1.0f, 0.0f) // Normal
+    );
     _bottomQuadTree = std::make_unique<Core::QuadTree>(
-        _size, // Width
+        *this, // Planet
+        QuadTree::Face::BOTTOM, // Face
+        0, // Level
+        _size, // Size
         glm::vec3(0.0f, 0.0f, -_size) + baseOffset, // Position
         glm::vec3(1.0f, 0.0f, 0.0f), // Width direction
         glm::vec3(0.0f, 0.0f, 1.0f), // Height direction
-        glm::vec3(0.0f, -1.0f, 0.0f), // Normal
-        QuadTree::Face::BOTTOM,
-        _levelsTable,
-        0,
-        _size
-        );
+        glm::vec3(0.0f, -1.0f, 0.0f) // Normal
+    );
 
     _leftQuadTree->setNeighBors(
         _topQuadTree.get(), // Top neightbor
@@ -223,6 +217,10 @@ const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
 
 float SphereQuadTree::getSize() const {
     return (_size);
+}
+
+const QuadTree::LevelsTable& SphereQuadTree::getLevelsTable() const {
+    return _levelsTable;
 }
 
 const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {

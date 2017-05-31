@@ -28,6 +28,7 @@ public:
 
     const Graphics::API::Buffer& getBuffer() const;
     float getSize() const;
+    const QuadTree::LevelsTable& getLevelsTable() const;
     const Graphics::API::Texture& getHeightMap() const;
 
 private:

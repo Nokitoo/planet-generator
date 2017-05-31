@@ -107,15 +107,16 @@ private:
     };
 
 public:
-    QuadTree(float size,
+    QuadTree(
+        const SphereQuadTree& planet,
+        Face face,
+        uint32_t level,
+        float size,
         const glm::vec3& pos,
         const glm::vec3& widthDir,
         const glm::vec3& heightDir,
-        const glm::vec3& normal,
-        Face face,
-        const LevelsTable& levelsTable,
-        uint32_t level,
-        float planetSize);
+        const glm::vec3& normal
+    );
     QuadTree() = delete;
     ~QuadTree() = default;
 
@@ -150,10 +151,16 @@ private:
     bool isOccludedByHorizon(const Graphics::Camera& camera) const;
 
 private:
+    const SphereQuadTree& _planet;
+
+    Face _face = Face::FRONT;
+    uint32_t _level = 0;
+    float _size = 0.0f;
+
     Children _children;
     Neighbors _neighbors;
+    bool _split = false;
 
-    float _size;
     glm::vec3 _pos;
     glm::vec3 _widthDir;
     glm::vec3 _heightDir;
@@ -162,14 +169,6 @@ private:
     Corners _corners;
     glm::vec3 _center;
     AABB _shapeBox;
-
-    Face _face = Face::FRONT;
-
-    const LevelsTable& _levelsTable;
-    uint32_t _level = 0;
-
-    bool _split = false;
-    float _planetSize = 0;
 };
 
 inline QuadTree::ChildOrientation operator+(QuadTree::ChildOrientation a, uint8_t b) {
