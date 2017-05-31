@@ -491,6 +491,101 @@ void QuadTree::addChildrenVertices(System::Vector<Vertex>& vertices, System::Vec
     _children.bottomRight->addChildrenVertices(vertices, indices);
 }
 
+/*
+ * Add quadtree shape to vertices buffer
+ * Only add lod level 0 shape otherwise it will be hard to see something
+*/
+void QuadTree::addDebugVertices(System::Vector<glm::vec3>& vertices, System::Vector<uint32_t>& indices) {
+    uint32_t verticesNb = static_cast<uint32_t>(vertices.size());
+
+    vertices.push_back(_shapeBox.corners.topLeft); // 0
+    vertices.push_back(_shapeBox.corners.topRight); // 1
+    vertices.push_back(_shapeBox.corners.bottomLeft); // 2
+    vertices.push_back(_shapeBox.corners.bottomRight); // 3
+
+    vertices.push_back(_shapeBox.cornersUp.topLeft); // 4
+    vertices.push_back(_shapeBox.cornersUp.topRight); // 5
+    vertices.push_back(_shapeBox.cornersUp.bottomLeft); // 6
+    vertices.push_back(_shapeBox.cornersUp.bottomRight); // 7
+
+    // Front
+    {
+        indices.push_back(verticesNb + 7);
+        indices.push_back(verticesNb + 6);
+        indices.push_back(verticesNb + 2);
+
+        indices.push_back(verticesNb + 7);
+        indices.push_back(verticesNb + 2);
+        indices.push_back(verticesNb + 3);
+    }
+
+    // Back
+    {
+        indices.push_back(verticesNb + 4);
+        indices.push_back(verticesNb + 5);
+        indices.push_back(verticesNb + 1);
+
+        indices.push_back(verticesNb + 4);
+        indices.push_back(verticesNb + 1);
+        indices.push_back(verticesNb);
+    }
+
+    // Top
+    {
+        indices.push_back(verticesNb + 5);
+        indices.push_back(verticesNb + 4);
+        indices.push_back(verticesNb + 6);
+
+        indices.push_back(verticesNb + 5);
+        indices.push_back(verticesNb + 6);
+        indices.push_back(verticesNb + 7);
+    }
+
+    // Bottom
+    {
+        indices.push_back(verticesNb + 3);
+        indices.push_back(verticesNb + 2);
+        indices.push_back(verticesNb + 1);
+
+        indices.push_back(verticesNb + 1);
+        indices.push_back(verticesNb + 2);
+        indices.push_back(verticesNb + 3);
+    }
+
+    // Right
+    {
+        indices.push_back(verticesNb + 5);
+        indices.push_back(verticesNb + 7);
+        indices.push_back(verticesNb + 3);
+
+        indices.push_back(verticesNb + 5);
+        indices.push_back(verticesNb + 3);
+        indices.push_back(verticesNb + 1);
+    }
+
+    // Left
+    {
+        indices.push_back(verticesNb + 6);
+        indices.push_back(verticesNb + 4);
+        indices.push_back(verticesNb + 2);
+
+        indices.push_back(verticesNb + 2);
+        indices.push_back(verticesNb + 4);
+        indices.push_back(verticesNb + 0);
+    }
+}
+
+void QuadTree::updateShapeAABB() {
+    calculateShapeAABB();
+
+    if (_split) {
+        _children.topLeft->updateShapeAABB();
+        _children.topRight->updateShapeAABB();
+        _children.bottomLeft->updateShapeAABB();
+        _children.bottomRight->updateShapeAABB();
+    }
+}
+
 static glm::vec3 getNormalizedCubeCoord(glm::vec3 worldCubeCoord, float planetSize) {
     return normalize((worldCubeCoord + (planetSize / 2.0f)) / planetSize * 2.0f - 1.0f);
 }
@@ -522,24 +617,21 @@ void QuadTree::calculateShapeAABB() {
     // We do it only for the level 0 because the shape difference error is low for higher levels
     {
         if (_level == 0) {
-            glm::vec3 sphereHeightDir = glm::normalize(_corners.topLeft.spherePos - _corners.bottomLeft.spherePos);
-            glm::vec3 sphereWidthDir = glm::normalize(_corners.topRight.spherePos - _corners.topLeft.spherePos);
-
             // Top padding
             glm::vec3 topMidle = calculateSpherePos((_corners.topLeft.cubePos + _corners.topRight.cubePos) / 2.0f);
-            glm::vec3 topRoundedHeight = (topMidle - _corners.topRight.spherePos) * sphereHeightDir;
+            glm::vec3 topRoundedHeight = abs(topMidle - _corners.topRight.spherePos) * _heightDir;
 
             // Bottom padding
             glm::vec3 bottomMidle = calculateSpherePos((_corners.bottomLeft.cubePos + _corners.bottomRight.cubePos) / 2.0f);
-            glm::vec3 bottomRoundedHeight = (_corners.bottomRight.spherePos - bottomMidle) * -sphereHeightDir;
+            glm::vec3 bottomRoundedHeight = abs(bottomMidle - _corners.bottomRight.spherePos) * -_heightDir;
 
             // Right padding
             glm::vec3 rightMidle = calculateSpherePos((_corners.topRight.cubePos + _corners.bottomRight.cubePos) / 2.0f);
-            glm::vec3 rightRoundedHeight = (rightMidle - _corners.topRight.spherePos) * sphereWidthDir;
+            glm::vec3 rightRoundedHeight = abs(rightMidle - _corners.topRight.spherePos) * _widthDir;
 
             // Left padding
             glm::vec3 leftMidle = calculateSpherePos((_corners.topLeft.cubePos + _corners.bottomLeft.cubePos) / 2.0f);
-            glm::vec3 leftRoundedHeight = (leftMidle - _corners.topLeft.spherePos) * sphereWidthDir;
+            glm::vec3 leftRoundedHeight = abs(_corners.topLeft.spherePos - leftMidle) * -_widthDir;
 
             // Add the paddings to the AABB box corners
             _shapeBox.corners.topLeft += topRoundedHeight + leftRoundedHeight;
@@ -564,18 +656,10 @@ void QuadTree::calculateShapeAABB() {
 
     // Add max heightmap height to the AABB box upper corners
     {
-        // Calculate the direction of the 4 corners
-        glm::vec3 topLeftDirection = glm::normalize(_corners.topLeft.spherePos);
-        glm::vec3 topRightDirection = glm::normalize(_corners.topRight.spherePos);
-        glm::vec3 bottomLeftDirection = glm::normalize(_corners.bottomLeft.spherePos);
-        glm::vec3 bottomRightDirection = glm::normalize(_corners.bottomRight.spherePos);
-
-        // TODO: Store maxHeight in planet and pass it to the shader
-        float maxHeight = 20.0f;
-        _shapeBox.cornersUp.topLeft += topLeftDirection * maxHeight;
-        _shapeBox.cornersUp.topRight += topRightDirection * maxHeight;
-        _shapeBox.cornersUp.bottomLeft += bottomLeftDirection * maxHeight;
-        _shapeBox.cornersUp.bottomRight += bottomRightDirection * maxHeight;
+        _shapeBox.cornersUp.topLeft += _normal * _planet.getMaxHeight();
+        _shapeBox.cornersUp.topRight += _normal * _planet.getMaxHeight();
+        _shapeBox.cornersUp.bottomLeft += _normal * _planet.getMaxHeight();
+        _shapeBox.cornersUp.bottomRight += _normal * _planet.getMaxHeight();
     }
 
 }

@@ -6,10 +6,12 @@ struct Debug {
     void wireframeDisplayed(bool displayed);
     void verticesNormalsDisplayed(bool displayed);
     void facesNormalsDisplayed(bool displayed);
+    void aabbDisplayed(bool displayed);
 
     bool wireframeDisplayed() const;
     bool verticesNormalsDisplayed() const;
     bool facesNormalsDisplayed() const;
+    bool aabbDisplayed() const;
     bool isActivated() const;
 
 private:
@@ -19,6 +21,7 @@ private:
     bool _wireframe = false;
     bool _verticesNormals = false;
     bool _facesNormals = false;
+    bool _aabb = false;
 
     bool _activated = false;
 };

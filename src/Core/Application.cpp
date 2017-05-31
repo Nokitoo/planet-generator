@@ -97,6 +97,10 @@ bool Application::handleEvents() {
             event.key.code == Window::Keyboard::Key::F4) {
             _camera.frustumLocked(!_camera.frustumLocked());
         }
+        if (event.type == Window::Event::Type::KeyPressed &&
+            event.key.code == Window::Keyboard::Key::F5) {
+            debug.aabbDisplayed(!debug.aabbDisplayed());
+        }
 
         if (event.type == Window::Event::Type::Resize) {
             _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
@@ -221,6 +225,11 @@ void Application::displayDebugWindow() {
     bool frustumLocked = _camera.frustumLocked();
     if (ImGui::Checkbox("Frustum locked (F4)", &frustumLocked)) {
         _camera.frustumLocked(frustumLocked);
+    }
+
+    bool aabbDisplayed = _renderer->getDebug().aabbDisplayed();
+    if (ImGui::Checkbox("AABB (F5)", &aabbDisplayed)) {
+        _renderer->getDebug().aabbDisplayed(aabbDisplayed);
     }
 
     ImGui::End();

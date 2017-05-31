@@ -138,6 +138,9 @@ public:
 
 private:
     void addChildrenVertices(System::Vector<Vertex>& vertices, System::Vector<uint32_t>& indices);
+    void addDebugVertices(System::Vector<glm::vec3>& vertices, System::Vector<uint32_t>& indices);
+
+    void updateShapeAABB();
 
     glm::vec3 calculateSpherePos(const glm::vec3& cubePos);
     void calculateShapeAABB();

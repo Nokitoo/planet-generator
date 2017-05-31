@@ -25,6 +25,7 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
     }
 
     if (_debug.isActivated()) {
+        // Use debug shader
         _debugShaderProgram.use();
 
         glUniform1i(_debugShaderProgram.getUniformLocation("wireframeDisplayed"), _debug.wireframeDisplayed());
@@ -32,7 +33,14 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         glUniform1i(_debugShaderProgram.getUniformLocation("facesNormalsDisplayed"), _debug.facesNormalsDisplayed());
 
         renderPlanets(_debugShaderProgram, camera, planets);
+
+        // Use main shader program here
+        // so we don't do multiple times _mainShaderProgram.use() if debug is not activated
         _mainShaderProgram.use();
+    }
+
+    if (_debug.aabbDisplayed()) {
+        renderPlanetsAABBDebug(camera, planets);
     }
 }
 
@@ -76,6 +84,44 @@ void Renderer::renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, 
     }
 }
 
+void Renderer::renderPlanetsAABBDebug(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
+    // Disable back culling to see AABB when we are inside it
+    // Setup blending
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Use AABB debug shader
+    _aabbDebugShaderProgram.use();
+
+    glUniformMatrix4fv(_aabbDebugShaderProgram.getUniformLocation("view"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(camera.getView()));
+    glUniformMatrix4fv(_aabbDebugShaderProgram.getUniformLocation("proj"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(camera.getProj()));
+
+    for (const auto& planet: planets) {
+        planet->getDebugBuffer().bind();
+        glDrawElements(
+            GL_TRIANGLES,
+            (GLuint)planet->getDebugBuffer().getIndicesNb(),
+            GL_UNSIGNED_INT,
+            0
+            );
+    }
+
+    // Use main shader program here
+    // so we don't do multiple times _mainShaderProgram.use() if debug is not activated
+    _mainShaderProgram.use();
+
+    // Restore back culling and blend states
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+}
+
 bool Renderer::initShaderProgram() {
     // Main shader program
     {
@@ -94,14 +140,14 @@ bool Renderer::initShaderProgram() {
         }
     }
 
-    // Debug shader program
+    // Debug shader program to debug normals
     {
         API::Builder::ShaderProgram shaderProgramBuilder;
         if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/shader.vert") ||
             !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/debug.frag") ||
             !shaderProgramBuilder.setShader(GL_GEOMETRY_SHADER, "resources/shaders/debug.geom")) {
             // TODO: replace this with logger
-            std::cerr << "Renderer::init: Can't init shaders" << std::endl;
+            std::cerr << "Renderer::init: Can't init debug shaders" << std::endl;
             return false;
         }
 
@@ -111,6 +157,25 @@ bool Renderer::initShaderProgram() {
             return false;
         }
     }
+
+
+    // Debug shader program to debug quadtrees AABB (used for frustum culling and horizon culling)
+    {
+        API::Builder::ShaderProgram shaderProgramBuilder;
+        if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/aabb.debug.vert") ||
+            !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/aabb.debug.frag")) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't init aabb debug shaders" << std::endl;
+            return false;
+        }
+
+        if (!shaderProgramBuilder.build(_aabbDebugShaderProgram)) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't create aabb debug shader program" << std::endl;
+            return false;
+        }
+    }
+
 
     _mainShaderProgram.use();
 

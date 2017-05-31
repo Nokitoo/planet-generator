@@ -29,6 +29,7 @@ public:
     float getSize() const;
     float getMaxHeight() const;
     const Graphics::API::Buffer& getBuffer() const;
+    const Graphics::API::Buffer& getDebugBuffer() const;
     const QuadTree::LevelsTable& getLevelsTable() const;
     const Graphics::API::Texture& getHeightMap() const;
 
@@ -44,7 +45,8 @@ private:
     void initChildren();
     bool initHeightMap();
     void initLevelsDistance();
-    bool initBufferBuilder();
+    bool initBuffer();
+    bool initDebugBuffer();
 
 private:
     float _size = 0.0f;
@@ -59,6 +61,8 @@ private:
 
     // Buffer storing vertices and indices
     Graphics::API::Buffer _buffer;
+    // Buffer storing aabb boxes
+    Graphics::API::Buffer _debugBuffer;
 
     // Store distance needed for each level
     QuadTree::LevelsTable _levelsTable;

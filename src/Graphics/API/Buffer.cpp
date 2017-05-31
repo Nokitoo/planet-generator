@@ -50,8 +50,8 @@ Buffer& Buffer::operator=(Buffer&& buffer) {
 
 void Buffer::bind() const {
     glBindVertexArray(_VAO);
-    //glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _EBO);
 }
 
 uint32_t Buffer::getVerticesNb() const {

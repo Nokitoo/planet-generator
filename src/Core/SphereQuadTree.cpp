@@ -74,46 +74,82 @@ std::unique_ptr<SphereQuadTree> SphereQuadTree::create(float size, float maxHeig
 }
 
 void SphereQuadTree::update(Graphics::Camera& camera) {
-    uint32_t chunkSize = 500;
-    uint32_t verticesNb = _buffer.getVerticesNb() ? _buffer.getVerticesNb() : chunkSize;
-    uint32_t indicesNb = _buffer.getIndicesNb() ? _buffer.getIndicesNb() : chunkSize;
+    // Add the quadtrees vertices to the SphereQuadTree buffer
+    {
+        uint32_t chunkSize = 500;
+        uint32_t verticesNb = _buffer.getVerticesNb() ? _buffer.getVerticesNb() : chunkSize;
+        uint32_t indicesNb = _buffer.getIndicesNb() ? _buffer.getIndicesNb() : chunkSize;
 
-    // Create indices and vertices buffers with chunks of 500
-    // (resize is perform only every 500 vertices/indices added in the vector)
-    // We also init the vector with the previous frame size to reduce the resizes
-    System::Vector<QuadTree::Vertex> vertices(chunkSize, verticesNb + chunkSize);
-    System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
+        // Create indices and vertices buffers with chunks of 500
+        // (resize is perform only every 500 vertices/indices added in the vector)
+        // We also init the vector with the previous frame size to reduce the resizes
+        System::Vector<QuadTree::Vertex> vertices(chunkSize, verticesNb + chunkSize);
+        System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
 
-    _leftQuadTree->update(camera);
-    _leftQuadTree->addChildrenVertices(vertices, indices);
+        _leftQuadTree->update(camera);
+        _leftQuadTree->addChildrenVertices(vertices, indices);
 
-    _rightQuadTree->update(camera);
-    _rightQuadTree->addChildrenVertices(vertices, indices);
+        _rightQuadTree->update(camera);
+        _rightQuadTree->addChildrenVertices(vertices, indices);
 
-    _frontQuadTree->update(camera);
-    _frontQuadTree->addChildrenVertices(vertices, indices);
+        _frontQuadTree->update(camera);
+        _frontQuadTree->addChildrenVertices(vertices, indices);
 
-    _backQuadTree->update(camera);
-    _backQuadTree->addChildrenVertices(vertices, indices);
+        _backQuadTree->update(camera);
+        _backQuadTree->addChildrenVertices(vertices, indices);
 
-    _topQuadTree->update(camera);
-    _topQuadTree->addChildrenVertices(vertices, indices);
+        _topQuadTree->update(camera);
+        _topQuadTree->addChildrenVertices(vertices, indices);
 
-    _bottomQuadTree->update(camera);
-    _bottomQuadTree->addChildrenVertices(vertices, indices);
+        _bottomQuadTree->update(camera);
+        _bottomQuadTree->addChildrenVertices(vertices, indices);
 
-    _buffer.updateVertices(
-        (char*)vertices.data(),
-        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex),
-        static_cast<uint32_t>(vertices.size()),
-        GL_DYNAMIC_DRAW
-        );
-    _buffer.updateIndices(
-        (char*)indices.data(),
-        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
-        static_cast<uint32_t>(indices.size()),
-        GL_DYNAMIC_DRAW
-        );
+        _buffer.updateVertices(
+            (char*)vertices.data(),
+            static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex),
+            static_cast<uint32_t>(vertices.size()),
+            GL_DYNAMIC_DRAW
+            );
+        _buffer.updateIndices(
+            (char*)indices.data(),
+            static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
+            static_cast<uint32_t>(indices.size()),
+            GL_DYNAMIC_DRAW
+            );
+    }
+
+    // Add the quadtrees debug aabb boxes vertices to the SphereQuadTree buffer
+    {
+        uint32_t chunkSize = 500;
+        uint32_t verticesNb = _debugBuffer.getVerticesNb() ? _debugBuffer.getVerticesNb() : chunkSize;
+        uint32_t indicesNb = _debugBuffer.getIndicesNb() ? _debugBuffer.getIndicesNb() : chunkSize;
+
+        // Create indices and vertices buffers with chunks of 500
+        // (resize is perform only every 500 vertices/indices added in the vector)
+        // We also init the vector with the previous frame size to reduce the resizes
+        System::Vector<glm::vec3> vertices(chunkSize, verticesNb + chunkSize);
+        System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
+
+        _leftQuadTree->addDebugVertices(vertices, indices);
+        _rightQuadTree->addDebugVertices(vertices, indices);
+        _frontQuadTree->addDebugVertices(vertices, indices);
+        _backQuadTree->addDebugVertices(vertices, indices);
+        _topQuadTree->addDebugVertices(vertices, indices);
+        _bottomQuadTree->addDebugVertices(vertices, indices);
+
+        _debugBuffer.updateVertices(
+            (char*)vertices.data(),
+            static_cast<uint32_t>(vertices.size()) * sizeof(glm::vec3),
+            static_cast<uint32_t>(vertices.size()),
+            GL_DYNAMIC_DRAW
+            );
+        _debugBuffer.updateIndices(
+            (char*)indices.data(),
+            static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
+            static_cast<uint32_t>(indices.size()),
+            GL_DYNAMIC_DRAW
+            );
+    }
 }
 
 float SphereQuadTree::getSize() const {
@@ -128,6 +164,10 @@ const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
     return _buffer;
 }
 
+const Graphics::API::Buffer& SphereQuadTree::getDebugBuffer() const {
+    return _debugBuffer;
+}
+
 const QuadTree::LevelsTable& SphereQuadTree::getLevelsTable() const {
     return _levelsTable;
 }
@@ -138,6 +178,13 @@ const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
 
 void SphereQuadTree::setMaxHeight(float maxHeight) {
     _maxHeight = maxHeight;
+
+    _leftQuadTree->updateShapeAABB();
+    _rightQuadTree->updateShapeAABB();
+    _frontQuadTree->updateShapeAABB();
+    _backQuadTree->updateShapeAABB();
+    _topQuadTree->updateShapeAABB();
+    _bottomQuadTree->updateShapeAABB();
 }
 
 void SphereQuadTree::setSize(float size) {
@@ -157,7 +204,7 @@ bool SphereQuadTree::init() {
     initLevelsDistance();
     initChildren();
 
-    return initHeightMap() && initBufferBuilder();
+    return initHeightMap() && initBuffer() && initDebugBuffer();
 }
 
 void SphereQuadTree::initChildren() {
@@ -311,7 +358,7 @@ void SphereQuadTree::initLevelsDistance() {
     }
 }
 
-bool SphereQuadTree::initBufferBuilder() {
+bool SphereQuadTree::initBuffer() {
     Graphics::API::Builder::Buffer bufferBuilder;
 
     // Cube position attribute
@@ -365,8 +412,32 @@ bool SphereQuadTree::initBufferBuilder() {
 
     if (!bufferBuilder.build(_buffer)) {
         // TODO: replace this with logger
-        std::cerr << "SphereQuadTree::initBufferBuilder: failed to create VAO" << std::endl;
-        // TODO return bool
+        std::cerr << "SphereQuadTree::initBuffer: failed to create VAO" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool SphereQuadTree::initDebugBuffer() {
+    Graphics::API::Builder::Buffer bufferBuilder;
+
+    // Position attribute
+    bufferBuilder.addAttribute({
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(glm::vec3),
+        0
+    });
+
+    bufferBuilder.setVerticesUsage(GL_DYNAMIC_DRAW);
+    bufferBuilder.setIndicesUsage(GL_DYNAMIC_DRAW);
+
+    if (!bufferBuilder.build(_debugBuffer)) {
+        // TODO: replace this with logger
+        std::cerr << "SphereQuadTree::initDebugBuffer: failed to create VAO" << std::endl;
         return false;
     }
 

@@ -33,6 +33,7 @@ private:
     bool init();
 
     void renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
+    void renderPlanetsAABBDebug(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets);
 
 private:
     bool initShaderProgram();
@@ -40,6 +41,7 @@ private:
 private:
     API::ShaderProgram _mainShaderProgram;
     API::ShaderProgram _debugShaderProgram;
+    API::ShaderProgram _aabbDebugShaderProgram;
 
     API::ShaderProgram* _currentShaderProgram = nullptr;
 
