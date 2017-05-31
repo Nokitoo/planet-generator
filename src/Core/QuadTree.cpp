@@ -17,12 +17,12 @@ QuadTree::QuadTree(
     const glm::vec3& normal
 ): _planet(planet), _face(face), _level(level), _size(size), _pos(pos), _widthDir(widthDir), _heightDir(heightDir), _normal(normal)
 {
-    glm::vec3 topLeft = pos + (heightDir * size);
-    glm::vec3 topRight = pos + (widthDir * size) + (heightDir * size);
-    glm::vec3 bottomLeft = pos;
-    glm::vec3 bottomRight = pos + (widthDir * size);
+    glm::vec3 topLeft = _pos + (_heightDir * _size);
+    glm::vec3 topRight = _pos + (_widthDir * _size) + (_heightDir * _size);
+    glm::vec3 bottomLeft = _pos;
+    glm::vec3 bottomRight = _pos + (_widthDir * _size);
 
-    _center = calculateSpherePos(bottomLeft + (widthDir * size / 2.0f) + (heightDir * size / 2.0f));
+    _center = calculateSpherePos(bottomLeft + (_widthDir * _size / 2.0f) + (_heightDir * _size / 2.0f));
 
     _corners.topLeft = {
         topLeft, calculateSpherePos(topLeft), _widthDir, _heightDir, static_cast<float>(_level)

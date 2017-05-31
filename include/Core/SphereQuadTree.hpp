@@ -33,13 +33,15 @@ public:
     const Graphics::API::Texture& getHeightMap() const;
 
     void setMaxHeight(float maxHeight);
+    void setSize(float size);
 
 private:
     // Only the SphereQuadTree::create can create the quadtree
     SphereQuadTree(float size, float maxHeight);
 
-    bool init(float size, float maxHeight);
+    bool init();
 
+    void initChildren();
     bool initHeightMap();
     void initLevelsDistance();
     bool initBufferBuilder();

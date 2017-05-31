@@ -66,7 +66,7 @@ std::unique_ptr<SphereQuadTree> SphereQuadTree::create(float size, float maxHeig
     // Don't use std::make_unique because the constructor is private
     std::unique_ptr<SphereQuadTree> sphereQuadTree(new SphereQuadTree(size, maxHeight));
 
-    if (!sphereQuadTree->init(size, maxHeight)) {
+    if (!sphereQuadTree->init()) {
         return nullptr;
     }
 
@@ -140,8 +140,28 @@ void SphereQuadTree::setMaxHeight(float maxHeight) {
     _maxHeight = maxHeight;
 }
 
-bool SphereQuadTree::init(float size, float maxHeight) {
-    // Center cube
+void SphereQuadTree::setSize(float size) {
+    _size = size;
+
+    _leftQuadTree = nullptr;
+    _rightQuadTree = nullptr;
+    _frontQuadTree = nullptr;
+    _backQuadTree = nullptr;
+    _topQuadTree = nullptr;
+
+    initLevelsDistance();
+    initChildren();
+}
+
+bool SphereQuadTree::init() {
+    initLevelsDistance();
+    initChildren();
+
+    return initHeightMap() && initBufferBuilder();
+}
+
+void SphereQuadTree::initChildren() {
+    // Center sphere
     glm::vec3 baseOffset = {
         -_size / 2.0f,
         -_size / 2.0f,
@@ -245,10 +265,6 @@ bool SphereQuadTree::init(float size, float maxHeight) {
         _rightQuadTree.get(), // Right neighbor
         _backQuadTree.get() // Bottom neighbor
     );
-
-    initLevelsDistance();
-
-    return initHeightMap() && initBufferBuilder();
 }
 
 bool SphereQuadTree::initHeightMap() {
@@ -280,6 +296,8 @@ bool SphereQuadTree::initHeightMap() {
 void SphereQuadTree::initLevelsDistance() {
     uint32_t maxLevels = 5;
     float distance = _size / 0.2f;
+
+    _levelsTable.clear();
 
     // We don't want the first 3 levels to be displayed
     // It don't look like a sphere

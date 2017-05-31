@@ -29,7 +29,7 @@ bool Application::init() {
 
     _camera.setPos({0.0f, 0.0f, planetSize + 50.0f});
     _camera.setNear(1.0f);
-    _camera.setFar(5000.0f);
+    _camera.setFar(9999999.0f);
     _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
 
     std::unique_ptr<Core::SphereQuadTree> planet = Core::SphereQuadTree::create(planetSize, planetMaxHeight);
@@ -241,11 +241,18 @@ void Application::displayEditorWindow() {
     // TODO: Editor multiple planets
     auto& planet = _planets.front();
 
-    float maxHeight = planet->getMaxHeight();
     ImGui::PushItemWidth(200);
+
+    float maxHeight = planet->getMaxHeight();
     if (ImGui::SliderFloat("Max height", &maxHeight, 0.0f, 500.0f, "%.0f")) {
         planet->setMaxHeight(maxHeight);
     }
+
+    float size = planet->getSize();
+    if (ImGui::SliderFloat("Size", &size, 0.0f, 500.0f, "%.0f")) {
+        planet->setSize(size);
+    }
+
     ImGui::PopItemWidth();
 
     ImGui::End();
