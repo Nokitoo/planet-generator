@@ -11,14 +11,14 @@ namespace Core {
 
 bool Application::init() {
     _window = Window::Window::create("Application window", {100, 100}, {1280, 720});
-    if (!_window) {
+    if (_window == nullptr) {
         // TODO: replace this with logger
         std::cerr << "Application::init: failed to create window" << std::endl;
         return false;
     }
 
     _renderer = Graphics::Renderer::create();
-    if (!_renderer) {
+    if (_renderer == nullptr) {
         // TODO: replace this with logger
         std::cerr << "Application::init: failed to create renderer" << std::endl;
         return false;
@@ -31,7 +31,14 @@ bool Application::init() {
     _camera.setNear(1.0f);
     _camera.setFar(5000.0f);
     _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
-    _planets.push_back(std::make_unique<Core::SphereQuadTree>(planetSize, planetMaxHeight));
+
+    std::unique_ptr<Core::SphereQuadTree> planet = Core::SphereQuadTree::create(planetSize, planetMaxHeight);
+    if (planet == nullptr) {
+        std::cerr << "Application::init: failed to create planet" << std::endl;
+        return false;
+    }
+
+    _planets.push_back(std::move(planet));
 
     return true;
 }

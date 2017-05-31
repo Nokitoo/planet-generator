@@ -14,7 +14,6 @@ namespace Core {
 
 class SphereQuadTree {
 public:
-    SphereQuadTree(float size, float maxHeight);
     ~SphereQuadTree() = default;
 
     SphereQuadTree(const SphereQuadTree& quadTree) = delete;
@@ -22,6 +21,8 @@ public:
 
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
+
+    static std::unique_ptr<SphereQuadTree> create(float size, float maxHeight);
 
     void update(Graphics::Camera& camera);
 
@@ -34,9 +35,14 @@ public:
     void setMaxHeight(float maxHeight);
 
 private:
+    // Only the SphereQuadTree::create can create the quadtree
+    SphereQuadTree(float size, float maxHeight);
+
+    bool init(float size, float maxHeight);
+
     bool initHeightMap();
     void initLevelsDistance();
-    void initBufferBuilder();
+    bool initBufferBuilder();
 
 private:
     float _size = 0.0f;

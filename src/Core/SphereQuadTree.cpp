@@ -8,7 +8,139 @@
 
 namespace Core {
 
-SphereQuadTree::SphereQuadTree(float size, float maxHeight): _size(size), _maxHeight(maxHeight) {
+SphereQuadTree::SphereQuadTree(float size, float maxHeight): _size(size), _maxHeight(maxHeight) {}
+
+SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
+    if (quadTree._leftQuadTree != nullptr) {
+        _leftQuadTree = std::move(quadTree._leftQuadTree);
+    }
+    if (quadTree._rightQuadTree != nullptr) {
+        _rightQuadTree = std::move(quadTree._rightQuadTree);
+    }
+    if (quadTree._frontQuadTree != nullptr) {
+        _frontQuadTree = std::move(quadTree._frontQuadTree);
+    }
+    if (quadTree._backQuadTree != nullptr) {
+        _backQuadTree = std::move(quadTree._backQuadTree);
+    }
+    if (quadTree._topQuadTree != nullptr) {
+        _topQuadTree = std::move(quadTree._topQuadTree);
+    }
+    if (quadTree._bottomQuadTree != nullptr) {
+        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
+    }
+
+    _buffer = std::move(quadTree._buffer);
+    _levelsTable = quadTree._levelsTable;
+    _maxHeight = quadTree._maxHeight;
+}
+
+SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
+    if (quadTree._leftQuadTree != nullptr) {
+        _leftQuadTree = std::move(quadTree._leftQuadTree);
+    }
+    if (quadTree._rightQuadTree != nullptr) {
+        _rightQuadTree = std::move(quadTree._rightQuadTree);
+    }
+    if (quadTree._frontQuadTree != nullptr) {
+        _frontQuadTree = std::move(quadTree._frontQuadTree);
+    }
+    if (quadTree._backQuadTree != nullptr) {
+        _backQuadTree = std::move(quadTree._backQuadTree);
+    }
+    if (quadTree._topQuadTree != nullptr) {
+        _topQuadTree = std::move(quadTree._topQuadTree);
+    }
+    if (quadTree._bottomQuadTree != nullptr) {
+        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
+    }
+
+    _buffer = std::move(quadTree._buffer);
+    _levelsTable = quadTree._levelsTable;
+    _maxHeight = quadTree._maxHeight;
+
+    return *this;
+}
+
+std::unique_ptr<SphereQuadTree> SphereQuadTree::create(float size, float maxHeight) {
+    // Don't use std::make_unique because the constructor is private
+    std::unique_ptr<SphereQuadTree> sphereQuadTree(new SphereQuadTree(size, maxHeight));
+
+    if (!sphereQuadTree->init(size, maxHeight)) {
+        return nullptr;
+    }
+
+    return sphereQuadTree;
+}
+
+void SphereQuadTree::update(Graphics::Camera& camera) {
+    uint32_t chunkSize = 500;
+    uint32_t verticesNb = _buffer.getVerticesNb() ? _buffer.getVerticesNb() : chunkSize;
+    uint32_t indicesNb = _buffer.getIndicesNb() ? _buffer.getIndicesNb() : chunkSize;
+
+    // Create indices and vertices buffers with chunks of 500
+    // (resize is perform only every 500 vertices/indices added in the vector)
+    // We also init the vector with the previous frame size to reduce the resizes
+    System::Vector<QuadTree::Vertex> vertices(chunkSize, verticesNb + chunkSize);
+    System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
+
+    _leftQuadTree->update(camera);
+    _leftQuadTree->addChildrenVertices(vertices, indices);
+
+    _rightQuadTree->update(camera);
+    _rightQuadTree->addChildrenVertices(vertices, indices);
+
+    _frontQuadTree->update(camera);
+    _frontQuadTree->addChildrenVertices(vertices, indices);
+
+    _backQuadTree->update(camera);
+    _backQuadTree->addChildrenVertices(vertices, indices);
+
+    _topQuadTree->update(camera);
+    _topQuadTree->addChildrenVertices(vertices, indices);
+
+    _bottomQuadTree->update(camera);
+    _bottomQuadTree->addChildrenVertices(vertices, indices);
+
+    _buffer.updateVertices(
+        (char*)vertices.data(),
+        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex),
+        static_cast<uint32_t>(vertices.size()),
+        GL_DYNAMIC_DRAW
+        );
+    _buffer.updateIndices(
+        (char*)indices.data(),
+        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
+        static_cast<uint32_t>(indices.size()),
+        GL_DYNAMIC_DRAW
+        );
+}
+
+float SphereQuadTree::getSize() const {
+    return (_size);
+}
+
+float SphereQuadTree::getMaxHeight() const {
+    return (_maxHeight);
+}
+
+const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
+    return _buffer;
+}
+
+const QuadTree::LevelsTable& SphereQuadTree::getLevelsTable() const {
+    return _levelsTable;
+}
+
+const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
+    return _heightMap;
+}
+
+void SphereQuadTree::setMaxHeight(float maxHeight) {
+    _maxHeight = maxHeight;
+}
+
+bool SphereQuadTree::init(float size, float maxHeight) {
     // Center cube
     glm::vec3 baseOffset = {
         -_size / 2.0f,
@@ -82,160 +214,41 @@ SphereQuadTree::SphereQuadTree(float size, float maxHeight): _size(size), _maxHe
         _backQuadTree.get(), // Left neighbor
         _frontQuadTree.get(), // Right neighbor
         _bottomQuadTree.get() // Bottom neighbor
-        );
+    );
     _rightQuadTree->setNeighBors(
         _topQuadTree.get(), // Top neightbor
         _frontQuadTree.get(), // Left neighbor
         _backQuadTree.get(), // Right neighbor
         _bottomQuadTree.get() // Bottom neighbor
-        );
+    );
     _frontQuadTree->setNeighBors(
         _topQuadTree.get(), // Top neightbor
         _leftQuadTree.get(), // Left neighbor
         _rightQuadTree.get(), // Right neighbor
         _bottomQuadTree.get() // Bottom neighbor
-        );
+    );
     _backQuadTree->setNeighBors(
         _topQuadTree.get(), // Top neightbor
         _rightQuadTree.get(), // Left neighbor
         _leftQuadTree.get(), // Right neighbor
         _bottomQuadTree.get() // Bottom neighbor
-        );
+    );
     _topQuadTree->setNeighBors(
         _backQuadTree.get(), // Top neightbor
         _leftQuadTree.get(), // Left neighbor
         _rightQuadTree.get(), // Right neighbor
         _frontQuadTree.get() // Bottom neighbor
-        );
+    );
     _bottomQuadTree->setNeighBors(
         _frontQuadTree.get(), // Top neightbor
         _leftQuadTree.get(), // Left neighbor
         _rightQuadTree.get(), // Right neighbor
         _backQuadTree.get() // Bottom neighbor
-        );
+    );
 
-    initHeightMap();
     initLevelsDistance();
-    initBufferBuilder();
-}
 
-SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
-    if (quadTree._leftQuadTree != nullptr) {
-        _leftQuadTree = std::move(quadTree._leftQuadTree);
-    }
-    if (quadTree._rightQuadTree != nullptr) {
-        _rightQuadTree = std::move(quadTree._rightQuadTree);
-    }
-    if (quadTree._frontQuadTree != nullptr) {
-        _frontQuadTree = std::move(quadTree._frontQuadTree);
-    }
-    if (quadTree._backQuadTree != nullptr) {
-        _backQuadTree = std::move(quadTree._backQuadTree);
-    }
-    if (quadTree._topQuadTree != nullptr) {
-        _topQuadTree = std::move(quadTree._topQuadTree);
-    }
-    if (quadTree._bottomQuadTree != nullptr) {
-        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
-    }
-
-    _buffer = std::move(quadTree._buffer);
-    _levelsTable = quadTree._levelsTable;
-    _maxHeight = quadTree._maxHeight;
-}
-
-SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
-    if (quadTree._leftQuadTree != nullptr) {
-        _leftQuadTree = std::move(quadTree._leftQuadTree);
-    }
-    if (quadTree._rightQuadTree != nullptr) {
-        _rightQuadTree = std::move(quadTree._rightQuadTree);
-    }
-    if (quadTree._frontQuadTree != nullptr) {
-        _frontQuadTree = std::move(quadTree._frontQuadTree);
-    }
-    if (quadTree._backQuadTree != nullptr) {
-        _backQuadTree = std::move(quadTree._backQuadTree);
-    }
-    if (quadTree._topQuadTree != nullptr) {
-        _topQuadTree = std::move(quadTree._topQuadTree);
-    }
-    if (quadTree._bottomQuadTree != nullptr) {
-        _bottomQuadTree = std::move(quadTree._bottomQuadTree);
-    }
-
-    _buffer = std::move(quadTree._buffer);
-    _levelsTable = quadTree._levelsTable;
-    _maxHeight = quadTree._maxHeight;
-
-    return *this;
-}
-
-void SphereQuadTree::update(Graphics::Camera& camera) {
-    uint32_t chunkSize = 500;
-    uint32_t verticesNb = _buffer.getVerticesNb() ? _buffer.getVerticesNb() : chunkSize;
-    uint32_t indicesNb = _buffer.getIndicesNb() ? _buffer.getIndicesNb() : chunkSize;
-
-    // Create indices and vertices buffers with chunks of 500
-    // (resize is perform only every 500 vertices/indices added in the vector)
-    // We also init the vector with the previous frame size to reduce the resizes
-    System::Vector<QuadTree::Vertex> vertices(chunkSize, verticesNb + chunkSize);
-    System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
-
-    _leftQuadTree->update(camera);
-    _leftQuadTree->addChildrenVertices(vertices, indices);
-
-    _rightQuadTree->update(camera);
-    _rightQuadTree->addChildrenVertices(vertices, indices);
-
-    _frontQuadTree->update(camera);
-    _frontQuadTree->addChildrenVertices(vertices, indices);
-
-    _backQuadTree->update(camera);
-    _backQuadTree->addChildrenVertices(vertices, indices);
-
-    _topQuadTree->update(camera);
-    _topQuadTree->addChildrenVertices(vertices, indices);
-
-    _bottomQuadTree->update(camera);
-    _bottomQuadTree->addChildrenVertices(vertices, indices);
-
-    _buffer.updateVertices(
-        (char*)vertices.data(),
-        static_cast<uint32_t>(vertices.size()) * sizeof(QuadTree::Vertex),
-        static_cast<uint32_t>(vertices.size()),
-        GL_DYNAMIC_DRAW
-        );
-    _buffer.updateIndices(
-        (char*)indices.data(),
-        static_cast<uint32_t>(indices.size()) * sizeof(uint32_t),
-        static_cast<uint32_t>(indices.size()),
-        GL_DYNAMIC_DRAW
-        );
-}
-
-float SphereQuadTree::getSize() const {
-    return (_size);
-}
-
-float SphereQuadTree::getMaxHeight() const {
-    return (_maxHeight);
-}
-
-const Graphics::API::Buffer& SphereQuadTree::getBuffer() const {
-    return _buffer;
-}
-
-const QuadTree::LevelsTable& SphereQuadTree::getLevelsTable() const {
-    return _levelsTable;
-}
-
-const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
-    return _heightMap;
-}
-
-void SphereQuadTree::setMaxHeight(float maxHeight) {
-    _maxHeight = maxHeight;
+    return initHeightMap() && initBufferBuilder();
 }
 
 bool SphereQuadTree::initHeightMap() {
@@ -280,7 +293,7 @@ void SphereQuadTree::initLevelsDistance() {
     }
 }
 
-void SphereQuadTree::initBufferBuilder() {
+bool SphereQuadTree::initBufferBuilder() {
     Graphics::API::Builder::Buffer bufferBuilder;
 
     // Cube position attribute
@@ -336,8 +349,10 @@ void SphereQuadTree::initBufferBuilder() {
         // TODO: replace this with logger
         std::cerr << "SphereQuadTree::initBufferBuilder: failed to create VAO" << std::endl;
         // TODO return bool
-        return;
+        return false;
     }
+
+    return true;
 }
 
 } // Namespace Core
