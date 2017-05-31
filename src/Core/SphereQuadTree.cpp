@@ -301,9 +301,9 @@ void SphereQuadTree::initLevelsDistance() {
 
     // We don't want the first 3 levels to be displayed
     // It don't look like a sphere
-    _levelsTable.push_back(9999.0f);
-    _levelsTable.push_back(9999.0f);
-    _levelsTable.push_back(9999.0f);
+    _levelsTable.push_back(distance);
+    _levelsTable.push_back(distance);
+    _levelsTable.push_back(distance);
 
     for (uint32_t i = 0; i < maxLevels; ++i) {
         _levelsTable.push_back(distance);
