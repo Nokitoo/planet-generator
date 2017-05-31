@@ -34,7 +34,6 @@ private:
     bool initHeightMap();
     void initLevelsDistance();
     void initBufferBuilder();
-    bool isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera);
 
 private:
     std::unique_ptr<QuadTree> _leftQuadTree = nullptr;

@@ -128,8 +128,8 @@ void Transform::rotate(float amount, const glm::vec3& axis) {
         return;
     }
 
-    glm::quat pitch = glm::angleAxis(axis.x * amount, glm::vec3(1, 0, 0));
-    glm::quat yaw = glm::angleAxis(axis.y * amount, glm::vec3(0, 1, 0));
+    glm::quat pitch = glm::angleAxis(axis.x * amount, _localRight);
+    glm::quat yaw = glm::angleAxis(axis.y * amount, _localUp);
 
     _orientation = glm::normalize(pitch * _orientation * yaw);
 

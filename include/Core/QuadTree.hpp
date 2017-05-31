@@ -147,6 +147,7 @@ private:
     void merge();
 
     bool isInsideFrustum(Graphics::Camera& camera) const;
+    bool isOccludedByHorizon(const Graphics::Camera& camera) const;
 
 private:
     Children _children;

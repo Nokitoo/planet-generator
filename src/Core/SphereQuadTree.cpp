@@ -185,30 +185,23 @@ void SphereQuadTree::update(Graphics::Camera& camera) {
     System::Vector<QuadTree::Vertex> vertices(chunkSize, verticesNb + chunkSize);
     System::Vector<uint32_t> indices(chunkSize, indicesNb + chunkSize);
 
-    if (isFacingCamera(_leftQuadTree.get(), camera)) {
-        _leftQuadTree->update(camera);
-        _leftQuadTree->addChildrenVertices(vertices, indices);
-    }
-    if (isFacingCamera(_rightQuadTree.get(), camera)) {
-        _rightQuadTree->update(camera);
-        _rightQuadTree->addChildrenVertices(vertices, indices);
-    }
-    if (isFacingCamera(_frontQuadTree.get(), camera)) {
-        _frontQuadTree->update(camera);
-        _frontQuadTree->addChildrenVertices(vertices, indices);
-    }
-    if (isFacingCamera(_backQuadTree.get(), camera)) {
-        _backQuadTree->update(camera);
-        _backQuadTree->addChildrenVertices(vertices, indices);
-    }
-    if (isFacingCamera(_topQuadTree.get(), camera)) {
-        _topQuadTree->update(camera);
-        _topQuadTree->addChildrenVertices(vertices, indices);
-    }
-    if (isFacingCamera(_bottomQuadTree.get(), camera)) {
-        _bottomQuadTree->update(camera);
-        _bottomQuadTree->addChildrenVertices(vertices, indices);
-    }
+    _leftQuadTree->update(camera);
+    _leftQuadTree->addChildrenVertices(vertices, indices);
+
+    _rightQuadTree->update(camera);
+    _rightQuadTree->addChildrenVertices(vertices, indices);
+
+    _frontQuadTree->update(camera);
+    _frontQuadTree->addChildrenVertices(vertices, indices);
+
+    _backQuadTree->update(camera);
+    _backQuadTree->addChildrenVertices(vertices, indices);
+
+    _topQuadTree->update(camera);
+    _topQuadTree->addChildrenVertices(vertices, indices);
+
+    _bottomQuadTree->update(camera);
+    _bottomQuadTree->addChildrenVertices(vertices, indices);
 
     _buffer.updateVertices(
         (char*)vertices.data(),
@@ -264,8 +257,7 @@ bool SphereQuadTree::initHeightMap() {
 
 void SphereQuadTree::initLevelsDistance() {
     uint32_t maxLevels = 5;
-    float distanceSteps = _size / 2.0f;
-    float distance = distanceSteps * maxLevels;
+    float distance = _size / 0.2f;
 
     // We don't want the first 3 levels to be displayed
     // It don't look like a sphere
@@ -275,7 +267,7 @@ void SphereQuadTree::initLevelsDistance() {
 
     for (uint32_t i = 0; i < maxLevels; ++i) {
         _levelsTable.push_back(distance);
-        distance -= distanceSteps;
+        distance /= 2.0f;
     }
 }
 
@@ -335,11 +327,6 @@ void SphereQuadTree::initBufferBuilder() {
         // TODO return bool
         return;
     }
-}
-
-bool SphereQuadTree::isFacingCamera(const QuadTree* quadTree, const Graphics::Camera& camera) {
-    glm::vec3 cameraDir = glm::normalize(quadTree->_center - camera.getPos());
-    return glm::dot(-cameraDir, quadTree->_normal) > -0.75f;
 }
 
 } // Namespace Core

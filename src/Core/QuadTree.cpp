@@ -37,7 +37,7 @@ QuadTree::QuadTree(float size,
 }
 
 void QuadTree::update(Graphics::Camera& camera) {
-    if (!isInsideFrustum(camera)) {
+    if (isOccludedByHorizon(camera) || !isInsideFrustum(camera)) {
         if (_split) {
             merge();
         }
@@ -680,6 +680,24 @@ bool QuadTree::isInsideFrustum(Graphics::Camera& camera) const {
         _shapeBox.cornersUp.bottomLeft,
         _shapeBox.cornersUp.bottomRight
     );
+}
+
+bool isBeyondHorizon(const glm::vec3& viewPos, const glm::vec3& planetCenterDir, const glm::vec3& point) {
+    glm::vec3 targetDir = point - viewPos;
+    float magnitudeSquared = pow(planetCenterDir.x, 2) + pow(planetCenterDir.y, 2) + pow(planetCenterDir.z, 2);
+
+    return glm::dot(targetDir, planetCenterDir) > magnitudeSquared - 1.0f;
+}
+
+bool QuadTree::isOccludedByHorizon(const Graphics::Camera& camera) const {
+    float planetHalfSize = _planetSize / 2.0f;
+    glm::vec3 viewPos = camera.getPos() / planetHalfSize;
+    glm::vec3 planetCenterDir = -viewPos;
+
+    return isBeyondHorizon(viewPos, planetCenterDir, _shapeBox.cornersUp.topLeft / planetHalfSize) &&
+    isBeyondHorizon(viewPos, planetCenterDir, _shapeBox.cornersUp.topRight / planetHalfSize) &&
+    isBeyondHorizon(viewPos, planetCenterDir, _shapeBox.cornersUp.bottomLeft / planetHalfSize) &&
+    isBeyondHorizon(viewPos, planetCenterDir, _shapeBox.cornersUp.bottomRight / planetHalfSize);
 }
 
 } // Namespace Core
