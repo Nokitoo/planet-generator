@@ -7,14 +7,16 @@ layout (location = 3) in vec3 inHeightDir;
 layout (location = 4) in float inQuadTreelevel;
 
 layout (location = 0) out vec3 outPos;
-layout (location = 1) out flat float outQuadTreelevel;
-layout (location = 2) out vec3 outNormal;
-layout (location = 3) out vec3 outCubeMapCoord;
+layout (location = 1) out vec3 outNormal;
+layout (location = 2) out vec3 outCubeMapCoord;
+layout (location = 3) out vec3 outTangent;
+layout (location = 4) out vec3 outBitangent;
 
 uniform mat4 view;
 uniform mat4 proj;
 uniform float planetSize;
 uniform samplerCube heightMap;
+uniform samplerCube normalMap;
 
 uniform float maxHeight;
 
@@ -42,46 +44,29 @@ vec3 getNormalizedCubeCoord(vec3 worldCubeCoord) {
     return normalize((worldCubeCoord + (planetSize / 2.0)) / planetSize * 2.0 - 1.0);
 }
 
-vec3 getNormal() {
-    float quadSize = pow(planetSize, 1.0 / inQuadTreelevel) * 2.0;
+float getQuadSize() {
+    float squareSize = planetSize;
+    for (int i = 0; i < inQuadTreelevel; ++i) {
+        squareSize = squareSize / 2.0;
+    }
 
-    /* To calculate the normal, we need to calculate the tangent and bitangent
-     * which is done with neighbor positions
-     *         o
-     *         |
-     *     o - x - o
-     *         |
-     *         o
-    */
-    // Calculate normalized cube position of neighbors
-    vec3 leftCubePos = getNormalizedCubeCoord(inCubePosition - (inWidthDir * quadSize));
+    return squareSize;
+}
+
+void calculateTangent() {
+    float quadSize = getQuadSize();
+
     vec3 rightCubePos = getNormalizedCubeCoord(inCubePosition + (inWidthDir * quadSize));
     vec3 topCubePos = getNormalizedCubeCoord(inCubePosition + (inHeightDir * quadSize));
-    vec3 bottomCubePos = getNormalizedCubeCoord(inCubePosition - (inHeightDir * quadSize));
 
-    // Calculate height of neighbors using cube positions
-    float leftCubePosHeight = getHeight(leftCubePos);
-    float rightCubePosHeight = getHeight(rightCubePos);
-    float topCubePosHeight = getHeight(topCubePos);
-    float bottomCubePosHeight = getHeight(bottomCubePos);
-
-    // Calculate sphere position of neighbors
-    vec3 leftSpherePos = mapCubeToSphere(leftCubePos) * planetSize;
     vec3 rightSpherePos = mapCubeToSphere(rightCubePos) * planetSize;
     vec3 topSpherePos = mapCubeToSphere(topCubePos) * planetSize;
-    vec3 bottomSpherePos = mapCubeToSphere(bottomCubePos) * planetSize;
 
-    // Add height on neighbors sphere positions
-    leftSpherePos += (leftCubePosHeight * normalize(leftSpherePos));
-    rightSpherePos += (rightCubePosHeight * normalize(rightSpherePos));
-    topSpherePos += (topCubePosHeight * normalize(topSpherePos));
-    bottomSpherePos += (bottomCubePosHeight * normalize(bottomSpherePos));
+    rightSpherePos += normalize(rightSpherePos) + getHeight(rightCubePos);
+    topSpherePos += normalize(topSpherePos) + getHeight(topCubePos);
 
-    vec3 tangent = normalize(rightSpherePos - leftSpherePos);
-    vec3 bitangent = normalize(topSpherePos - bottomSpherePos);
-    vec3 normal = normalize(cross(tangent, bitangent));
-
-    return normal;
+    outTangent = normalize(rightSpherePos - outPos);
+    outBitangent = normalize(topSpherePos - outPos);
 }
 
 void main()
@@ -91,13 +76,14 @@ void main()
     // Convert position to range [-1.0, 1.0]
     outCubeMapCoord = getNormalizedCubeCoord(inCubePosition);
 
-    vec3 vertexNormal = normalize(outPos);
+    vec3 vertexNormal = normalize(inSpherePosition);
 
-    outNormal = getNormal();
-    outQuadTreelevel = inQuadTreelevel;
+    outNormal = normalize(inSpherePosition);
 
     // Add height to out position
     outPos += (vertexNormal * getHeight(outCubeMapCoord));
 
     gl_Position = proj * view * vec4(outPos, 1.0);
+
+    calculateTangent();
 }

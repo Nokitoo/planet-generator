@@ -50,5 +50,9 @@ GLuint ShaderProgram::getUniformLocation(const std::string& locationName) {
     return _locations.at(locationName);
 }
 
+GLuint ShaderProgram::getUniformLocation(const std::string& locationName) const {
+    return _locations.at(locationName);
+}
+
 } // Namespace API
 } // Namespace Graphics

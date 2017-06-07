@@ -2,6 +2,7 @@
 
 #include <Graphics/API/Builder/Buffer.hpp> // Graphics::API::Builder::Buffer
 #include <Graphics/API/Builder/Texture.hpp> // Graphics::API::Builder::Texture
+#include <Graphics/Renderer.hpp> // Graphics::Renderer
 #include <System/Vector.hpp> // System::Vector
 
 #include <Core/SphereQuadTree.hpp> // Graphics::Core::SphereQuadTree
@@ -33,6 +34,8 @@ SphereQuadTree::SphereQuadTree(SphereQuadTree&& quadTree) {
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
     _maxHeight = quadTree._maxHeight;
+    _heightMap = std::move(quadTree._heightMap);
+    _normalMap = std::move(quadTree._normalMap);
 }
 
 SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
@@ -58,15 +61,17 @@ SphereQuadTree& SphereQuadTree::operator=(SphereQuadTree&& quadTree) {
     _buffer = std::move(quadTree._buffer);
     _levelsTable = quadTree._levelsTable;
     _maxHeight = quadTree._maxHeight;
+    _heightMap = std::move(quadTree._heightMap);
+    _normalMap = std::move(quadTree._normalMap);
 
     return *this;
 }
 
-std::unique_ptr<SphereQuadTree> SphereQuadTree::create(float size, float maxHeight) {
+std::unique_ptr<SphereQuadTree> SphereQuadTree::create(const Graphics::Renderer* renderer, float size, float maxHeight) {
     // Don't use std::make_unique because the constructor is private
     std::unique_ptr<SphereQuadTree> sphereQuadTree(new SphereQuadTree(size, maxHeight));
 
-    if (!sphereQuadTree->init()) {
+    if (!sphereQuadTree->init(renderer)) {
         return nullptr;
     }
 
@@ -176,6 +181,10 @@ const Graphics::API::Texture& SphereQuadTree::getHeightMap() const {
     return _heightMap;
 }
 
+const Graphics::API::Texture& SphereQuadTree::getNormalMap() const {
+    return _normalMap;
+}
+
 void SphereQuadTree::setMaxHeight(float maxHeight) {
     _maxHeight = maxHeight;
 
@@ -200,11 +209,11 @@ void SphereQuadTree::setSize(float size) {
     initChildren();
 }
 
-bool SphereQuadTree::init() {
+bool SphereQuadTree::init(const Graphics::Renderer* renderer) {
     initLevelsDistance();
     initChildren();
 
-    return initHeightMap() && initBuffer() && initDebugBuffer();
+    return initHeightMap() && initNormalMap(renderer) && initBuffer() && initDebugBuffer();
 }
 
 void SphereQuadTree::initChildren() {
@@ -318,14 +327,15 @@ bool SphereQuadTree::initHeightMap() {
     Graphics::API::Builder::Texture textureBuilder;
 
     textureBuilder.setType(GL_TEXTURE_CUBE_MAP);
-    textureBuilder.setFormat(GL_RGB);
-    textureBuilder.setInternalFormat(GL_RGB);
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/brush2.png");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/brush2.png");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/brush2.png");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/brush2.png");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/brush2.png");
-    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/brush2.png");
+    textureBuilder.setFormat(GL_RGBA);
+    textureBuilder.setInternalFormat(GL_RGBA32F);
+    textureBuilder.setDataType(GL_FLOAT);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X)->setFileName("resources/images/brush3.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X)->setFileName("resources/images/brush3.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y)->setFileName("resources/images/brush3.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)->setFileName("resources/images/brush3.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z)->setFileName("resources/images/brush3.png");
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)->setFileName("resources/images/brush3.png");
     textureBuilder.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     textureBuilder.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -337,6 +347,40 @@ bool SphereQuadTree::initHeightMap() {
         std::cerr << "SphereQuadTree::initHeightMap: failed to create height map texture" << std::endl;
         return false;
     }
+    return true;
+}
+
+bool SphereQuadTree::initNormalMap(const Graphics::Renderer* renderer) {
+    Graphics::API::Builder::Texture textureBuilder;
+
+    textureBuilder.setType(GL_TEXTURE_CUBE_MAP);
+    textureBuilder.setFormat(GL_RGBA);
+    textureBuilder.setInternalFormat(GL_RGBA32F);
+    textureBuilder.setDataType(GL_FLOAT);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+    textureBuilder.addImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+    textureBuilder.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    textureBuilder.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    textureBuilder.setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    textureBuilder.setWidth(_heightMap.getWidth());
+    textureBuilder.setHeight(_heightMap.getHeight());
+
+    if (!textureBuilder.build(_normalMap)) {
+        // TODO: replace this with logger
+        std::cerr << "SphereQuadTree::initNormalMap: failed to create normal map texture" << std::endl;
+        return false;
+    }
+
+    renderer->createNormalMapFromHeightMap(_heightMap, _normalMap, _maxHeight);
+
     return true;
 }
 

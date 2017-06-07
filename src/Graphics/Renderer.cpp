@@ -2,15 +2,19 @@
 
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
+#include <Graphics/API/Builder/Framebuffer.hpp> // Graphics::API::Builder::Framebuffer
 #include <Graphics/API/Builder/ShaderProgram.hpp> // Graphics::API::Builder::ShaderProgram
+#include <Graphics/API/Framebuffer.hpp> // Graphics::API::Framebuffer
 
 #include <Graphics/Renderer.hpp> // Graphics::Renderer
 
 namespace Graphics {
 
-std::unique_ptr<Renderer> Renderer::create() {
+Renderer::Renderer(const Window::Window* window): _window(window) {}
+
+std::unique_ptr<Renderer> Renderer::create(const Window::Window* window) {
     // Don't use std::make_unique because the constructor is private
-    std::unique_ptr<Renderer> renderer(new Renderer());
+    std::unique_ptr<Renderer> renderer(new Renderer(window));
 
     if (!renderer->init()) {
         return nullptr;
@@ -21,6 +25,8 @@ std::unique_ptr<Renderer> Renderer::create() {
 
 void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::SphereQuadTree>>& planets) {
     if (!_debug.wireframeDisplayed()) {
+        glUniform1i(_mainShaderProgram.getUniformLocation("heightMap"), 0);
+        glUniform1i(_mainShaderProgram.getUniformLocation("normalMap"), 1);
         renderPlanets(_mainShaderProgram, camera, planets);
     }
 
@@ -46,6 +52,57 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
 
 Debug& Renderer::getDebug() {
     return _debug;
+}
+
+void Renderer::createNormalMapFromHeightMap(const API::Texture& heightMap, const API::Texture& normalMap, float maxHeight) const {
+    static Graphics::API::Framebuffer* fbo = nullptr;
+
+    // Init framebuffer
+    // TODO: Move in SphereQuadTree to prevent recreating the color attachments array ?
+    if (!fbo) {
+        fbo = new Graphics::API::Framebuffer();
+        Graphics::API::Builder::Framebuffer framebufferBuilder;
+
+        framebufferBuilder.build(*fbo);
+    }
+
+    fbo->bind();
+
+    // Update color attachments
+    fbo->removeColorAttachments();
+    for (int i = 0; i < 6; ++i) {
+        fbo->addColorAttachment(&normalMap, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+    }
+
+    // Use the framebuffer to specify the attachments used in the fragment shader
+    fbo->use();
+
+    _normalMapShaderProgram.use();
+
+    glUniform1f(_normalMapShaderProgram.getUniformLocation("maxHeight"), maxHeight);
+    glUniform1f(_normalMapShaderProgram.getUniformLocation("imageSize"), (GLfloat)normalMap.getWidth());
+
+    // Bind height map for read
+    glBindImageTexture(
+        0,
+        static_cast<GLuint>(heightMap),
+        0,
+        GL_TRUE,
+        0,
+        GL_READ_ONLY,
+        GL_RGBA32F
+    );
+
+    glViewport(0, 0, normalMap.getWidth(), normalMap.getWidth());
+
+    // Render the normal map
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    fbo->unBind();
+    _mainShaderProgram.use();
+
+    // Reset viewport
+    glViewport(0, 0, _window->getSize().x, _window->getSize().y);
 }
 
 bool Renderer::init() {
@@ -74,7 +131,8 @@ void Renderer::renderPlanets(API::ShaderProgram& shaderProgram, Camera& camera, 
         glUniform1f(shaderProgram.getUniformLocation("planetSize"), planet->getSize());
         glUniform1f(shaderProgram.getUniformLocation("maxHeight"), planet->getMaxHeight());
         planet->getBuffer().bind();
-        planet->getHeightMap().bind();
+        planet->getHeightMap().bind(GL_TEXTURE0);
+        planet->getNormalMap().bind(GL_TEXTURE1);
         glDrawElements(
             GL_TRIANGLES,
             (GLuint)planet->getBuffer().getIndicesNb(),
@@ -176,8 +234,32 @@ bool Renderer::initShaderProgram() {
         }
     }
 
+    // Compute shader program
+    {
+        API::Builder::ShaderProgram shaderProgramBuilder;
+        if (!shaderProgramBuilder.setShader(GL_VERTEX_SHADER, "resources/shaders/screen-triangle.vert") ||
+            !shaderProgramBuilder.setShader(GL_FRAGMENT_SHADER, "resources/shaders/normal.frag")) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't init normal map shaders" << std::endl;
+            return false;
+        }
+
+        if (!shaderProgramBuilder.build(_normalMapShaderProgram)) {
+            // TODO: replace this with logger
+            std::cerr << "Renderer::init: Can't create normal map shader program" << std::endl;
+            return false;
+        }
+    }
+
+    // Make the ShaderProgram store "maxHeight" and "imageSize" locations because it's used in Renderer::createNormalMapFromHeightMap
+    // which is const and can't modify the ShaderProgram
+    _normalMapShaderProgram.getUniformLocation("maxHeight");
+    _normalMapShaderProgram.getUniformLocation("imageSize");
 
     _mainShaderProgram.use();
+
+    glUniform1i(_mainShaderProgram.getUniformLocation("heightMap"), 0);
+    glUniform1i(_mainShaderProgram.getUniformLocation("normalMap"), 1);
 
     return true;
 }

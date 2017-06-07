@@ -13,6 +13,7 @@ namespace Builder {
 
 class Buffer {
     friend Builder::Buffer;
+
 public:
     Buffer() = default;
     ~Buffer();

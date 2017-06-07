@@ -25,14 +25,14 @@ public:
         void setFileName(const std::string& fileName);
 
     private:
-        bool getData(unsigned char*& data, GLsizei& width, GLsizei& height);
+        bool getData(void*& data, GLsizei& width, GLsizei& height);
 
     private:
         GLenum _type = 0; // 0 means use same as texture type
         std::string _fileName; // Optionally load texture from a file
 
         // Used internally
-        unsigned char* _data = nullptr;
+        void* _data = nullptr;
         int _width = 0;
         int _height = 0;
         Texture* _texture = nullptr;
@@ -64,7 +64,7 @@ public:
     template<typename... Args>
     Image* addImage(Args... args);
 
-    private:
+private:
     GLenum _type = GL_TEXTURE_2D;
     GLsizei _width = 0;
     GLsizei _height = 0;

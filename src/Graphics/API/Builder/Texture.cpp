@@ -18,7 +18,7 @@ Texture::Image::~Image() {
     }
 }
 
-bool Texture::Image::getData(unsigned char*& data, GLsizei& width, GLsizei& height) {
+bool Texture::Image::getData(void*& data, GLsizei& width, GLsizei& height) {
     data = nullptr;
     width = _texture->_width;
     height = _texture->_height;
@@ -51,7 +51,18 @@ bool Texture::Image::getData(unsigned char*& data, GLsizei& width, GLsizei& heig
 
     // TODO: Use resources manager
     int compNb = 0;
-    _data = stbi_load(_fileName.c_str(), &_width, &_height, &compNb, WantedCompNb);
+    if (_texture->_dataType == GL_FLOAT) {
+        _data = stbi_loadf(_fileName.c_str(), &_width, &_height, &compNb, WantedCompNb);
+    }
+    else if (_texture->_dataType == GL_UNSIGNED_BYTE) {
+        _data = stbi_load(_fileName.c_str(), &_width, &_height, &compNb, WantedCompNb);
+    }
+    else {
+        // TODO: replace this with logger
+        std::cerr << "Texture::Image::getData: Can't load image from file \"" << _fileName << "\"";
+        std::cerr << ": Data type not supported" << std::endl;
+        return false;
+    }
 
     if (_data == nullptr) {
         // TODO: replace this with logger
@@ -78,9 +89,14 @@ bool Texture::build(API::Texture& texture) {
     }
 
     texture._type = _type;
+    texture._internalFormat = _internalFormat;
+    texture._format = _format;
+    texture._dataType = _dataType;
 
     glGenTextures(1, &texture._texture);
     texture.bind();
+
+    //glGenerateMipmap(_type);
 
     // Generate texture images
     for (Texture::Image& image: _images) {
@@ -89,7 +105,7 @@ bool Texture::build(API::Texture& texture) {
             type = _type;
         }
 
-        unsigned char* data = nullptr;
+        void* data = nullptr;
         GLsizei width = 0;
         GLsizei height = 0;
         if (!image.getData(data, width, height)) {
@@ -98,17 +114,27 @@ bool Texture::build(API::Texture& texture) {
             return false;
         }
 
+        // Check images have the same size
+        if (!(!texture._width && !texture._height) &&
+            (width != texture._width || height != texture._height)) {
+            // TODO: replace this with logger
+            std::cerr << "Texture::build: Images don't have the same size. ";
+            std::cerr << "Image loaded with width " << texture._width << " and height " << texture._height;
+            std::cerr << " but an other image has dimensions width " << width << " and height " << height << std::endl;
+            return false;
+        }
+
         glTexImage2D(type, 0, _internalFormat, width, height, 0, _format, _dataType, data);
+
+        texture._width = width;
+        texture._height = height;
     }
 
-    //glGenerateMipmap(_type);
     // Set texture parameters
     for (auto& param: _parameters) {
         glTexParameteri(_type, param.first, param.second);
     }
 
-    texture._width = _width;
-    texture._height = _height;
 
     texture.unBind();
 

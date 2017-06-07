@@ -4,9 +4,8 @@ layout(triangles) in;
 layout(line_strip, max_vertices = 11) out;
 
 layout (location = 0) in vec3 inPos[];
-layout (location = 1) in flat float inQuadTreelevel[];
-layout (location = 2) in vec3 inNormal[];
-layout (location = 3) in vec3 inCubeMapCoord[];
+layout (location = 1) in vec3 inNormal[];
+layout (location = 2) in vec3 inCubeMapCoord[];
 
 layout (location = 0) out vec3 outColor;
 

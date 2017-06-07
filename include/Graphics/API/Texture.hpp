@@ -13,6 +13,7 @@ namespace Builder {
 
 class Texture {
     friend Builder::Texture;
+
 public:
     Texture() = default;
     ~Texture();
@@ -23,8 +24,17 @@ public:
     Texture& operator=(const Texture& texture) = delete;
     Texture& operator=(Texture&& texture);
 
+    explicit operator GLuint() const {
+        return _texture;
+    }
+
     void bind(GLenum unit = GL_TEXTURE0) const;
     void unBind() const;
+
+    void updateData(void* data, GLenum type = 0) const;
+
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
 
 private:
     GLuint _texture = 0;
@@ -32,6 +42,10 @@ private:
     uint32_t _width = 0;
     uint32_t _height = 0;
     GLenum _type = GL_TEXTURE_2D;
+
+    GLint _internalFormat = GL_RGBA;
+    GLint _format = GL_RGBA;
+    GLenum _dataType = GL_UNSIGNED_BYTE;
 };
 
 } // Namespace API

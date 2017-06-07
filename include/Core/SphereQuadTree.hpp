@@ -10,6 +10,10 @@
 #include <Graphics/API/Buffer.hpp> // Graphics::API::Buffer
 #include <Graphics/API/Texture.hpp> // Graphics::API::Texture
 
+namespace Graphics {
+    class Renderer;
+} // Namespace Graphics
+
 namespace Core {
 
 class SphereQuadTree {
@@ -22,7 +26,7 @@ public:
     SphereQuadTree& operator=(const SphereQuadTree& quadTree) = delete;
     SphereQuadTree& operator=(SphereQuadTree&& quadTree);
 
-    static std::unique_ptr<SphereQuadTree> create(float size, float maxHeight);
+    static std::unique_ptr<SphereQuadTree> create(const Graphics::Renderer* renderer, float size, float maxHeight);
 
     void update(Graphics::Camera& camera);
 
@@ -32,6 +36,7 @@ public:
     const Graphics::API::Buffer& getDebugBuffer() const;
     const QuadTree::LevelsTable& getLevelsTable() const;
     const Graphics::API::Texture& getHeightMap() const;
+    const Graphics::API::Texture& getNormalMap() const;
 
     void setMaxHeight(float maxHeight);
     void setSize(float size);
@@ -40,10 +45,11 @@ private:
     // Only the SphereQuadTree::create can create the quadtree
     SphereQuadTree(float size, float maxHeight);
 
-    bool init();
+    bool init(const Graphics::Renderer* renderer);
 
     void initChildren();
     bool initHeightMap();
+    bool initNormalMap(const Graphics::Renderer* renderer);
     void initLevelsDistance();
     bool initBuffer();
     bool initDebugBuffer();
@@ -68,6 +74,7 @@ private:
     QuadTree::LevelsTable _levelsTable;
 
     Graphics::API::Texture _heightMap;
+    Graphics::API::Texture _normalMap;
 };
 
 } // Namespace Core

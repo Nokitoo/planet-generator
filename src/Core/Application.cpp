@@ -17,7 +17,7 @@ bool Application::init() {
         return false;
     }
 
-    _renderer = Graphics::Renderer::create();
+    _renderer = Graphics::Renderer::create(_window.get());
     if (_renderer == nullptr) {
         // TODO: replace this with logger
         std::cerr << "Application::init: failed to create renderer" << std::endl;
@@ -32,13 +32,19 @@ bool Application::init() {
     _camera.setFar(9999999.0f);
     _camera.setAspect((float)_window->getSize().x / (float)_window->getSize().y);
 
-    std::unique_ptr<Core::SphereQuadTree> planet = Core::SphereQuadTree::create(planetSize, planetMaxHeight);
+    std::unique_ptr<Core::SphereQuadTree> planet = Core::SphereQuadTree::create(_renderer.get(), planetSize, planetMaxHeight);
     if (planet == nullptr) {
         std::cerr << "Application::init: failed to create planet" << std::endl;
         return false;
     }
 
     _planets.push_back(std::move(planet));
+
+    // TODO: Remove this line
+    // Why is the normal map not generating without the update ?
+    _planets.back()->update(_camera);
+
+    _renderer->createNormalMapFromHeightMap(_planets.back()->getHeightMap(), _planets.back()->getNormalMap(), _planets.back()->getMaxHeight());
 
     return true;
 }
@@ -255,6 +261,7 @@ void Application::displayEditorWindow() {
     float maxHeight = planet->getMaxHeight();
     if (ImGui::SliderFloat("Max height", &maxHeight, 0.0f, 500.0f, "%.0f")) {
         planet->setMaxHeight(maxHeight);
+        _renderer->createNormalMapFromHeightMap(planet->getHeightMap(), planet->getNormalMap(), planet->getMaxHeight());
     }
 
     float size = planet->getSize();

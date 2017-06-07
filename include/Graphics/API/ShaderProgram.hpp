@@ -13,6 +13,7 @@ namespace Builder {
 
 class ShaderProgram {
     friend Builder::ShaderProgram;
+
 public:
     ShaderProgram() = default;
     ~ShaderProgram();
@@ -26,6 +27,7 @@ public:
     void use() const;
 
     GLuint getUniformLocation(const std::string& locationName);
+    GLuint getUniformLocation(const std::string& locationName) const;
 
 private:
     GLuint _shaderProgram = 0;
