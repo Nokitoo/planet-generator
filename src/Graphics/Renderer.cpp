@@ -34,6 +34,9 @@ void Renderer::render(Camera& camera, const std::vector<std::unique_ptr<Core::Sp
         // Use debug shader
         _debugShaderProgram.use();
 
+        glUniform1i(_debugShaderProgram.getUniformLocation("heightMap"), 0);
+        glUniform1i(_debugShaderProgram.getUniformLocation("normalMap"), 1);
+
         glUniform1i(_debugShaderProgram.getUniformLocation("wireframeDisplayed"), _debug.wireframeDisplayed());
         glUniform1i(_debugShaderProgram.getUniformLocation("verticesNormalsDisplayed"), _debug.verticesNormalsDisplayed());
         glUniform1i(_debugShaderProgram.getUniformLocation("facesNormalsDisplayed"), _debug.facesNormalsDisplayed());
