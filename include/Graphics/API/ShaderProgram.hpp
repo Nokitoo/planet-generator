@@ -32,6 +32,9 @@ public:
     void destroy();
 
 private:
+    ShaderProgram(GLuint shaderProgram, const std::unordered_map<GLenum, GLuint>& shaders);
+
+private:
     GLuint _shaderProgram = 0;
 
     std::unordered_map<GLenum, GLuint> _shaders;

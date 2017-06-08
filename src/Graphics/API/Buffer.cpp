@@ -25,6 +25,15 @@ Buffer::Buffer(Buffer&& buffer) {
     buffer._indicesNb = 0;
 }
 
+Buffer::Buffer(
+    GLuint VAO,
+    GLuint VBO,
+    GLuint EBO,
+    uint32_t verticesSize,
+    uint32_t verticesNb,
+    uint32_t indicesSize,
+    uint32_t indicesNb
+): _VAO(VAO), _VBO(VBO), _EBO(EBO), _verticesSize(verticesSize), _verticesNb(verticesNb), _indicesSize(indicesSize), _indicesNb(indicesNb) {}
 
 Buffer& Buffer::operator=(Buffer&& buffer) {
     destroy();

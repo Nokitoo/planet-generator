@@ -39,6 +39,9 @@ public:
     void destroy();
 
 private:
+    Framebuffer(GLuint fbo);
+
+private:
     GLuint _fbo;
 
     GLuint _depthBuffer = 0;

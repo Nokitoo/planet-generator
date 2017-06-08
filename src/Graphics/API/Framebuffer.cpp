@@ -3,6 +3,8 @@
 namespace Graphics {
 namespace API {
 
+Framebuffer::Framebuffer(GLuint fbo): _fbo(fbo) {}
+
 Framebuffer::~Framebuffer() {
     destroy();
 }

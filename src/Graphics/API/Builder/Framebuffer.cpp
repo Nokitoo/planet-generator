@@ -5,7 +5,10 @@ namespace API {
 namespace Builder {
 
 bool Framebuffer::build(API::Framebuffer& framebuffer) {
-    glGenFramebuffers(1, &framebuffer._fbo);
+    GLuint glFramebuffer = 0;
+    glGenFramebuffers(1, &glFramebuffer);
+
+    framebuffer = API::Framebuffer(glFramebuffer);
 
     framebuffer.bind();
 

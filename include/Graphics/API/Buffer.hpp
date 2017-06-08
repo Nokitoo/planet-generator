@@ -35,6 +35,17 @@ public:
     void destroy();
 
 private:
+    Buffer(
+        GLuint VAO,
+        GLuint VBO,
+        GLuint EBO,
+        uint32_t verticesSize,
+        uint32_t verticesNb,
+        uint32_t indicesSize,
+        uint32_t indicesNb
+    );
+
+private:
     // Vertex array buffer
     GLuint _VAO = 0;
 

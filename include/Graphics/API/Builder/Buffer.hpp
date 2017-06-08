@@ -30,7 +30,7 @@ public:
     Buffer& operator=(const Buffer& buffer) = delete;
     Buffer& operator=(Buffer&& buffer) = delete;
 
-    bool build(API::Buffer& returnBuffer);
+    bool build(API::Buffer& buffer);
 
     void addAttribute(const Attribute& attribute);
     void setVertices(const char* data, uint32_t size, uint32_t verticesNb);

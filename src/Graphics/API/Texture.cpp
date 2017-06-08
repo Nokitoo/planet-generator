@@ -3,6 +3,16 @@
 namespace Graphics {
 namespace API {
 
+Texture::Texture(
+    GLuint texture,
+    uint32_t width,
+    uint32_t _height,
+    GLenum type,
+    GLint internalFormat,
+    GLint format,
+    GLint dataType
+): _texture(texture), _width(width), _height(_height), _type(type), _internalFormat(internalFormat), _format(format), _dataType(dataType) {}
+
 Texture::~Texture() {
     destroy();
 }

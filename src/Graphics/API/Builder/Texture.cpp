@@ -88,15 +88,12 @@ bool Texture::build(API::Texture& texture) {
         return false;
     }
 
-    texture._type = _type;
-    texture._internalFormat = _internalFormat;
-    texture._format = _format;
-    texture._dataType = _dataType;
+    GLuint glTexture = 0;
+    glGenTextures(1, &glTexture);
+    glBindTexture(_type, glTexture);
 
-    glGenTextures(1, &texture._texture);
-    texture.bind();
-
-    //glGenerateMipmap(_type);
+    GLsizei textureWidth = 0;
+    GLsizei textureHeight = 0;
 
     // Generate texture images
     for (Texture::Image& image: _images) {
@@ -115,19 +112,19 @@ bool Texture::build(API::Texture& texture) {
         }
 
         // Check images have the same size
-        if (!(!texture._width && !texture._height) &&
-            (width != texture._width || height != texture._height)) {
+        if (!(!textureWidth && !textureHeight) &&
+            (width != textureWidth || height != textureHeight)) {
             // TODO: replace this with logger
             std::cerr << "Texture::build: Images don't have the same size. ";
-            std::cerr << "Image loaded with width " << texture._width << " and height " << texture._height;
+            std::cerr << "Image loaded with width " << textureWidth << " and height " << textureHeight;
             std::cerr << " but an other image has dimensions width " << width << " and height " << height << std::endl;
             return false;
         }
 
         glTexImage2D(type, 0, _internalFormat, width, height, 0, _format, _dataType, data);
 
-        texture._width = width;
-        texture._height = height;
+        textureWidth = width;
+        textureHeight = height;
     }
 
     // Set texture parameters
@@ -135,8 +132,17 @@ bool Texture::build(API::Texture& texture) {
         glTexParameteri(_type, param.first, param.second);
     }
 
+    glBindTexture(_type, 0);
 
-    texture.unBind();
+    texture = API::Texture(
+        glTexture,
+        textureWidth,
+        textureHeight,
+        _type,
+        _internalFormat,
+        _format,
+        _dataType
+    );
 
     return true;
 }

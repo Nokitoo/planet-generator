@@ -13,13 +13,14 @@ ShaderProgram::~ShaderProgram() {
 }
 
 bool ShaderProgram::build(API::ShaderProgram& shaderProgram) {
-    shaderProgram._shaderProgram = glCreateProgram();
-    if (!shaderProgram._shaderProgram) {
+    GLuint glShaderProgram = glCreateProgram();
+    if (!glShaderProgram) {
         // TODO: replace this with logger
         std::cerr << "Builder::ShaderProgram::build: Can't create shader program" << std::endl;
         return false;
     }
 
+    std::unordered_map<GLenum, GLuint> shaders;
     for (auto& it: _shadersFiles) {
         auto& shaderFile = it.second;
         auto shaderType = it.first;
@@ -50,15 +51,17 @@ bool ShaderProgram::build(API::ShaderProgram& shaderProgram) {
             return false;
         }
 
-        glAttachShader(shaderProgram._shaderProgram, shader);
+        glAttachShader(glShaderProgram, shader);
 
-        shaderProgram._shaders[shaderType] = shader;
+        shaders[shaderType] = shader;
     }
 
-    glLinkProgram(shaderProgram._shaderProgram);
-    if (!checkProgramStatus(shaderProgram._shaderProgram, GL_LINK_STATUS)) {
+    glLinkProgram(glShaderProgram);
+    if (!checkProgramStatus(glShaderProgram, GL_LINK_STATUS)) {
         return false;
     }
+
+    shaderProgram = API::ShaderProgram(glShaderProgram, shaders);
 
     return true;
 }

@@ -14,22 +14,23 @@ Buffer::~Buffer() {
     }
 }
 
-bool Buffer::build(API::Buffer& returnBuffer) {
-    API::Buffer buffer;
+bool Buffer::build(API::Buffer& buffer) {
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
-    glGenVertexArrays(1, &buffer._VAO);
-    glGenBuffers(1, &buffer._VBO);
-    glGenBuffers(1, &buffer._EBO);
-
-    buffer.bind();
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     // Update vertices buffer
-    glBindBuffer(GL_ARRAY_BUFFER, buffer._VBO);
-    buffer.updateVertices(_verticesData, _verticesSize, _verticesNb, _verticesUsage);
+    glBufferData(GL_ARRAY_BUFFER, _verticesSize, _verticesData, _verticesUsage);
 
     // Update indices buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer._EBO);
-    buffer.updateIndices(_indicesData, _indicesSize, _indicesNb, _indicesUsage);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indicesSize, _indicesData, _indicesUsage);
 
     // Configure buffer attribute
     for (const auto& attribute: _attributes) {
@@ -46,7 +47,15 @@ bool Buffer::build(API::Buffer& returnBuffer) {
 
     glBindVertexArray(0);
 
-    returnBuffer = std::move(buffer);
+    buffer = API::Buffer(
+        VAO,
+        VBO,
+        EBO,
+        _verticesSize,
+        _verticesNb,
+        _indicesSize,
+        _indicesNb
+    );
 
     return true;
 }

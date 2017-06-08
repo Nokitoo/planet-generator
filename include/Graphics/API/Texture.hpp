@@ -39,6 +39,16 @@ public:
     void destroy();
 
 private:
+    Texture(GLuint texture,
+        uint32_t width,
+        uint32_t _height,
+        GLenum type,
+        GLint internalFormat,
+        GLint format,
+        GLint dataType
+    );
+
+private:
     GLuint _texture = 0;
 
     uint32_t _width = 0;

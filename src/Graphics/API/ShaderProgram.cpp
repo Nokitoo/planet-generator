@@ -12,6 +12,10 @@ ShaderProgram::ShaderProgram(ShaderProgram&& shaderProgram) {
     shaderProgram._locations.clear();
 }
 
+ShaderProgram::ShaderProgram(
+    GLuint shaderProgram,
+    const std::unordered_map<GLenum, GLuint>& shaders
+): _shaderProgram(shaderProgram), _shaders(shaders) {}
 
 ShaderProgram& ShaderProgram::operator=(ShaderProgram&& shaderProgram) {
     destroy();
