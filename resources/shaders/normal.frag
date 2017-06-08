@@ -32,14 +32,26 @@ vec3 calculateNormalSobel(int layer) {
     float bottomLeft = getHeight(faceTexCoord + ivec3(-1, 1, 0));
     float left = getHeight(faceTexCoord + ivec3(-1, 0, 0));
 
-    // sobel filter
-    float dX = (topRight + 2.0 * right + bottomRight) - (topLeft + 2.0 * left + bottomLeft);
-    float dY = (bottomLeft + 2.0 * bottom + bottomRight) - (topLeft + 2.0 * top + topRight);
-    float dZ = 1.0 / 2.0;
+    // Apply sobel filter
+    vec3 normal;
+    // Horizontal sobel
+    // 1  0  -1
+    // 2  0  -2
+    // 1  0  -1
+    normal.x = topLeft - topRight + (2.0 * left) - (2.0 * right) + bottomLeft - bottomRight;
 
-    vec3 normal = vec3(dX, dY, dZ);
+    // Vertical sobel
+    // 1  2  1
+    // 0  0  0
+    //-1 -2 -1
+    normal.z = topLeft + (2.0 * top) + topRight - bottomLeft - (2.0 * bottom) - bottomRight;
+
+    float normalStrength = 5.0;
+    normal.y = 1.0 / normalStrength;
+
     normal = normalize(normal);
 
+    // Convert normal from range [-1, 1] to range [0, 1]
     normal = (normal + 1.0f) * 0.5f;
 
     return normal;

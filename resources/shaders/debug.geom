@@ -31,16 +31,18 @@ void emitWireframe() {
 
 vec3 getNormal(int vertexIndice) {
     // Convert normal from [0, 1] to [-1, 1]
-    vec3 worldNormal = 2.0f * texture(normalMap, inCubeMapCoord[vertexIndice]).rgb - 1.0f;
+    vec3 worldNormal = 2.0 * texture(normalMap, inCubeMapCoord[vertexIndice]).rgb - 1.0;
     worldNormal = normalize(worldNormal);
 
     // Construct tangent, bitangent, normal matrix
-    mat3 TBN = mat3(inTangent[vertexIndice], inBitangent[vertexIndice], inNormal[vertexIndice]);
+    mat3 TBN = mat3(inTangent[vertexIndice], inNormal[vertexIndice], inBitangent[vertexIndice]);
 
     return normalize(TBN * worldNormal);
 }
 
 void emitVerticesNormals() {
+    // Shortcuts for vertices
+
     mat4 projViewMatrix = proj * view;
     for (int i = 0; i < 3; ++i)
     {

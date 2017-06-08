@@ -53,20 +53,47 @@ float getQuadSize() {
     return squareSize;
 }
 
+float vectorComponentsSum(vec3 vec) {
+    return vec.x + vec.y + vec.z;
+}
+
+vec2 get2DTextCoord(vec3 cubeCoord) {
+    cubeCoord = (cubeCoord + 1.0) * 0.5;
+    float x = vectorComponentsSum(cubeCoord * inWidthDir);
+    float y = vectorComponentsSum(cubeCoord * inHeightDir);
+
+    return vec2(x, y);
+}
+
+// Call this function after outCubeMapCoord has been set
 void calculateTangent() {
     float quadSize = getQuadSize();
 
-    vec3 rightCubePos = getNormalizedCubeCoord(inCubePosition + (inWidthDir * quadSize));
-    vec3 topCubePos = getNormalizedCubeCoord(inCubePosition + (inHeightDir * quadSize));
+    vec3 rightCubeMapCoord = getNormalizedCubeCoord(inCubePosition + (inWidthDir * quadSize));
+    vec3 topCubeMapCoord = getNormalizedCubeCoord(inCubePosition + (inHeightDir * quadSize));
 
-    vec3 rightSpherePos = mapCubeToSphere(rightCubePos) * planetSize;
-    vec3 topSpherePos = mapCubeToSphere(topCubePos) * planetSize;
+    vec3 rightSpherePos = mapCubeToSphere(rightCubeMapCoord) * planetSize;
+    vec3 topSpherePos = mapCubeToSphere(topCubeMapCoord) * planetSize;
 
-    rightSpherePos += normalize(rightSpherePos) + getHeight(rightCubePos);
-    topSpherePos += normalize(topSpherePos) + getHeight(topCubePos);
+    // Triangle uvs
+    vec2 uv0 = get2DTextCoord(outCubeMapCoord);
+    vec2 uv1 = get2DTextCoord(rightCubeMapCoord);
+    vec2 uv2 = get2DTextCoord(topCubeMapCoord);
 
-    outTangent = normalize(rightSpherePos - outPos);
-    outBitangent = normalize(topSpherePos - outPos);
+    // Triangle edges
+    vec3 edge1 = rightSpherePos - inSpherePosition;
+    vec3 edge2 = topSpherePos - inSpherePosition;
+
+    // UV difference between triangle edges positions
+    // UV difference for edge1
+    vec2 deltaUV1 = uv1 - uv0;
+    // UV difference for edge2
+    vec2 deltaUV2 = uv2 - uv0;
+
+    // Calculate tangent and bitangent
+    float r = 1.0 / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+    outTangent = normalize((edge1 * deltaUV2.y - edge2 * deltaUV1.y) * r);
+    outBitangent = -normalize((edge2 * deltaUV1.x - edge1 * deltaUV2.x) * r);
 }
 
 void main()
@@ -76,12 +103,10 @@ void main()
     // Convert position to range [-1.0, 1.0]
     outCubeMapCoord = getNormalizedCubeCoord(inCubePosition);
 
-    vec3 vertexNormal = normalize(inSpherePosition);
-
     outNormal = normalize(inSpherePosition);
 
     // Add height to out position
-    outPos += (vertexNormal * getHeight(outCubeMapCoord));
+    outPos += (outNormal * getHeight(outCubeMapCoord));
 
     gl_Position = proj * view * vec4(outPos, 1.0);
 

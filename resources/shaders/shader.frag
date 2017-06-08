@@ -22,12 +22,12 @@ float getHeight(vec3 heightMapCoord) {
 }
 
 vec3 getNormal() {
-    // Convert normal from [0, 1] to [-1, 1]
+    // Convert normal from range [0, 1] to range [-1, 1]
     vec3 worldNormal = 2.0f * texture(normalMap, cubeMapCoord).rgb - 1.0f;
     worldNormal = normalize(worldNormal);
 
     // Construct tangent, bitangent, normal matrix
-    mat3 TBN = mat3(inTangent, inBitangent, normalize(fragNormal));
+    mat3 TBN = mat3(inTangent, normalize(fragNormal), inBitangent);
 
     return normalize(TBN * worldNormal);
 }
