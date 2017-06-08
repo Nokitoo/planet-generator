@@ -4,13 +4,7 @@ namespace Graphics {
 namespace API {
 
 Framebuffer::~Framebuffer() {
-    if (_depthBuffer) {
-        glDeleteRenderbuffers(1, &_depthBuffer);
-    }
-
-    if (_fbo) {
-        glDeleteFramebuffers(1, &_fbo);
-    }
+    destroy();
 }
 
 Framebuffer::Framebuffer(Framebuffer&& framebuffer) {
@@ -21,9 +15,13 @@ Framebuffer::Framebuffer(Framebuffer&& framebuffer) {
 
     framebuffer._fbo = 0;
     framebuffer._depthBuffer = 0;
+    framebuffer._colorAttachments.clear();
+    framebuffer._colorAttachmentsIds.clear();
 }
 
 Framebuffer& Framebuffer::operator=(Framebuffer&& framebuffer) {
+    destroy();
+
     _fbo = framebuffer._fbo;
     _colorAttachments = std::move(framebuffer._colorAttachments);
     _colorAttachmentsIds = std::move(framebuffer._colorAttachmentsIds);
@@ -31,6 +29,8 @@ Framebuffer& Framebuffer::operator=(Framebuffer&& framebuffer) {
 
     framebuffer._fbo = 0;
     framebuffer._depthBuffer = 0;
+    framebuffer._colorAttachments.clear();
+    framebuffer._colorAttachmentsIds.clear();
 
     return (*this);
 }
@@ -86,8 +86,23 @@ bool Framebuffer::isComplete() const {
     return (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 }
 
-const std::vector<const Texture*>&   Framebuffer::getColorAttachments() const {
+const std::vector<const Texture*>& Framebuffer::getColorAttachments() const {
     return (_colorAttachments);
+}
+
+void Framebuffer::destroy() {
+    if (_depthBuffer) {
+        glDeleteRenderbuffers(1, &_depthBuffer);
+        _depthBuffer = 0;
+    }
+
+    if (_fbo) {
+        glDeleteFramebuffers(1, &_fbo);
+        _fbo = 0;
+    }
+
+    _colorAttachments.clear();
+    _colorAttachmentsIds.clear();
 }
 
 } // Namespace API

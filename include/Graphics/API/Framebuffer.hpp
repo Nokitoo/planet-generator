@@ -36,12 +36,15 @@ public:
 
     const std::vector<const Texture*>& getColorAttachments() const;
 
+    void destroy();
+
 private:
     GLuint _fbo;
 
+    GLuint _depthBuffer = 0;
+
     std::vector<const Texture*> _colorAttachments;
     std::vector<GLuint> _colorAttachmentsIds;
-    GLuint _depthBuffer = 0;
 };
 
 } // Namespace API

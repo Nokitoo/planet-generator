@@ -93,15 +93,23 @@ void Buffer::updateIndices(char* data, uint32_t size, uint32_t indicesNb, GLenum
 void Buffer::destroy() {
     if (_VAO) {
         glDeleteVertexArrays(1, &_VAO);
+        _VAO = 0;
     }
 
     if (_VBO) {
         glDeleteBuffers(1, &_VBO);
+        _VBO = 0;
     }
 
     if (_EBO) {
         glDeleteBuffers(1, &_EBO);
+        _EBO = 0;
     }
+
+    _verticesSize = 0;
+    _verticesNb = 0;
+    _indicesSize = 0;
+    _indicesNb = 0;
 }
 
 } // Namespace API

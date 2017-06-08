@@ -4,9 +4,7 @@ namespace Graphics {
 namespace API {
 
 Texture::~Texture() {
-    if (_texture) {
-        glDeleteTextures(1, &_texture);
-    }
+    destroy();
 }
 
 Texture::Texture(Texture&& texture) {
@@ -24,7 +22,8 @@ Texture::Texture(Texture&& texture) {
 }
 
 Texture& Texture::operator=(Texture&& texture) {
-    // TODO: Destroy texture
+    destroy();
+
     _texture = texture._texture;
     _width = texture._width;
     _height = texture._height;
@@ -65,6 +64,13 @@ uint32_t Texture::getWidth() const {
 
 uint32_t Texture::getHeight() const {
     return _height;
+}
+
+void Texture::destroy() {
+    if (_texture) {
+        glDeleteTextures(1, &_texture);
+        _texture = 0;
+    }
 }
 
 } // Namespace API

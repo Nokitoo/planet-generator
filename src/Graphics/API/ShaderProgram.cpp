@@ -9,30 +9,25 @@ ShaderProgram::ShaderProgram(ShaderProgram&& shaderProgram) {
 
     shaderProgram._shaderProgram = 0;
     shaderProgram._shaders.clear();
+    shaderProgram._locations.clear();
 }
 
 
 ShaderProgram& ShaderProgram::operator=(ShaderProgram&& shaderProgram) {
+    destroy();
+
     _shaderProgram = shaderProgram._shaderProgram;
     _shaders = shaderProgram._shaders;
 
     shaderProgram._shaderProgram = 0;
     shaderProgram._shaders.clear();
+    shaderProgram._locations.clear();
 
     return *this;
 }
 
 ShaderProgram::~ShaderProgram() {
-    if (_shaderProgram) {
-        glDeleteProgram(_shaderProgram);
-    }
-
-    for (auto &&shader: _shaders)
-    {
-        if (shader.first) {
-            glDeleteShader(shader.first);
-        }
-    }
+    destroy();
 }
 
 void ShaderProgram::use() const {
@@ -52,6 +47,23 @@ GLuint ShaderProgram::getUniformLocation(const std::string& locationName) {
 
 GLuint ShaderProgram::getUniformLocation(const std::string& locationName) const {
     return _locations.at(locationName);
+}
+
+void ShaderProgram::destroy() {
+    if (_shaderProgram) {
+        glDeleteProgram(_shaderProgram);
+        _shaderProgram = 0;
+    }
+
+    for (auto &&shader: _shaders)
+    {
+        if (shader.first) {
+            glDeleteShader(shader.first);
+        }
+    }
+
+    _shaders.clear();
+    _locations.clear();
 }
 
 } // Namespace API

@@ -29,6 +29,8 @@ public:
     GLuint getUniformLocation(const std::string& locationName);
     GLuint getUniformLocation(const std::string& locationName) const;
 
+    void destroy();
+
 private:
     GLuint _shaderProgram = 0;
 
