@@ -19,6 +19,7 @@ file(
 if (OS_WINDOWS)
   set(SDL2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/SDL2/include")
   set(SDL2_LIBRARY "${CMAKE_SOURCE_DIR}/external/SDL2/lib/windows/${ARCH_DIR}/SDL2.lib")
+  set(SDL2_DLL "${CMAKE_SOURCE_DIR}/external/SDL2/lib/windows/${ARCH_DIR}/SDL2.dll")
 endif()
 
 # Find GLEW
@@ -26,6 +27,7 @@ endif()
 if (OS_WINDOWS)
   set(GLEW_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/glew/include")
   set(GLEW_LIBRARY "${CMAKE_SOURCE_DIR}/external/glew/lib/windows/${ARCH_DIR}/glew32.lib")
+  set(GLEW_DLL "${CMAKE_SOURCE_DIR}/external/glew/bin/windows/${ARCH_DIR}/glew32.dll")
 endif()
 
 # Find Opengl library
@@ -62,6 +64,15 @@ target_link_libraries(
 file(
   COPY
   ${CMAKE_CURRENT_SOURCE_DIR}/resources
+  DESTINATION
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+#Copy dlls to build directory
+file(
+  COPY
+  ${SDL2_DLL}
+  ${GLEW_DLL}
   DESTINATION
   ${CMAKE_CURRENT_BINARY_DIR}
 )
